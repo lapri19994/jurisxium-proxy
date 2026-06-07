@@ -208,6 +208,15 @@ app.post('/api/chat', async function(req, res) {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+app.post('/api/claude-direct', async function(req, res) {
+  const prompt = req.body.prompt;
+  const max_tokens = req.body.max_tokens || 1200;
+  if (!prompt) return res.status(400).json({ error: 'Prompt manquant' });
+  try {
+    const text = await claude([{ role: 'user', content: prompt }], max_tokens);
+    res.json({ text: text });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 app.listen(PORT, function() {
   console.log('Jurisxium running on port ' + PORT);
   console.log('ANTHROPIC_KEY: ' + (ANTHROPIC_KEY ? 'OK' : 'MANQUANTE'));
