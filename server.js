@@ -214,8 +214,12 @@ app.post('/api/claude-direct', async function(req, res) {
   if (!prompt) return res.status(400).json({ error: 'Prompt manquant' });
   try {
     const text = await claude([{ role: 'user', content: prompt }], max_tokens);
+    console.log('CLAUDE-DIRECT RAW:', text.slice(0, 500));  // ← ligne ajoutée
     res.json({ text: text });
-  } catch(e) { res.status(500).json({ error: e.message }); }
+  } catch(e) { 
+    console.log('CLAUDE-DIRECT ERROR:', e.message);  // ← ligne ajoutée
+    res.status(500).json({ error: e.message }); 
+  }
 });
 app.listen(PORT, function() {
   console.log('Jurisxium running on port ' + PORT);
