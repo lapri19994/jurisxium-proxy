@@ -60,11 +60,7 @@ async function legifranceSearch(query) {
     const token = await getOAuthToken();
     const res = await fetch(`${LEGIFRANCE_BASE}/search`, {
       method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'accept': 'application/json'
-      },
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
         recherche: {
           champs: [{ typeChamp: 'ALL', criteres: [{ typeRecherche: 'TOUS_LES_MOTS_EXACTES', valeur: query }], operateur: 'ET' }],
@@ -83,146 +79,13 @@ async function claude(messages, max_tokens = 3000) {
   if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_KEY manquante');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'content-type': 'application/json',
-      'x-api-key': ANTHROPIC_KEY,
-      'anthropic-version': '2023-06-01',
-    },
+    headers: { 'content-type': 'application/json', 'x-api-key': ANTHROPIC_KEY, 'anthropic-version': '2023-06-01' },
     body: JSON.stringify({ model: 'claude-sonnet-4-5', max_tokens, messages })
   });
   const data = await res.json();
   if (data.type === 'error') throw new Error('Claude: ' + data.error?.message);
   if (!data.content?.[0]) throw new Error('Claude réponse vide');
   return data.content[0].text;
-}
-
-// Évalue si les JP trouvées répondent à la question
-async function evaluateJP(question, decisions) {
-  if (!decisions.length) return { sufficient: false, reason: 'Aucune décision trouvée' };
-  const sample = decisions.slice(0, 5).map((d, i) =>
-    `[${i+1}] ${d.jurisdiction || ''} ${d.chamber || ''} ${d.date || ''} : ${d.fullText?.slice(0, 300) || d.excerpt || ''}`
-  ).join('\n');
-  const result = await claude([{
-    role: 'user',
-    content: `Question juridique : "${question.titre}" — ${question.description}
-
-Voici des décisions trouvées :
-${sample}
-
-Ces décisions répondent-elles directement à la question posée ?
-Réponds en JSON strict : {"sufficient": true/false, "reason": "explication courte", "relevant_indices": [1,2,3]}`
-  }], 300);
-  try {
-    return JSON.parse(result.replace(/```json|```/g, '').trim());
-  } catch(e) {
-    return { sufficient: false, reason: 'Évaluation impossible' };
-  }
-}
-
-// Recherche itérative avec SSE
-async function iterativeJPSearch(question, facts, send, maxJP = 150) {
-  // Génère les requêtes initiales
-  const queriesRaw = await claude([{
-    role: 'user',
-    content: `Tu es un juriste français. Génère des requêtes de recherche JUDILIBRE pour cette question.
-Question : "${question.titre}" — ${question.description}
-Faits : ${facts}
-
-Règles :
-- 2 à 4 mots par requête (termes qui apparaissent dans les décisions, pas concepts abstraits)
-- 3 à 6 requêtes, de la plus précise à la plus large
-- Ordre : commence par les termes les plus spécifiques
-
-JSON strict : {"requetes": ["requête 1", "requête 2", ...]}`
-  }], 400);
-
-  let queries;
-  try {
-    queries = JSON.parse(queriesRaw.replace(/```json|```/g, '').trim()).requetes;
-  } catch(e) {
-    queries = [question.titre.slice(0, 30)];
-  }
-
-  const allDecisions = [];
-  const seenIds = new Set();
-  let totalAnalyzed = 0;
-  let sufficient = false;
-  let queryIdx = 0;
-  let page = 0;
-
-  send({ type: 'queries', queries });
-
-  while (totalAnalyzed < maxJP && !sufficient) {
-    if (queryIdx >= queries.length) {
-      // Génère de nouvelles requêtes
-      send({ type: 'status', msg: 'Génération de nouvelles requêtes...' });
-      const newQueriesRaw = await claude([{
-        role: 'user',
-        content: `On a cherché : ${queries.join(', ')} sans résultat suffisant.
-Question : "${question.titre}"
-Génère 3 nouvelles requêtes DIFFÉRENTES. JSON : {"requetes": ["req1","req2","req3"]}`
-      }], 200);
-      try {
-        const newQ = JSON.parse(newQueriesRaw.replace(/```json|```/g, '').trim()).requetes;
-        queries = [...queries, ...newQ];
-        send({ type: 'new_queries', queries: newQ });
-      } catch(e) { break; }
-    }
-
-    const q = queries[queryIdx];
-    send({ type: 'searching', query: q, page });
-
-    try {
-      const data = await judilibre('search', { query: q, page_size: 10, page });
-      const decisions = data.results || [];
-
-      // Récupère texte complet
-      const enriched = await Promise.all(
-        decisions.filter(d => !seenIds.has(d.id)).map(async d => {
-          seenIds.add(d.id);
-          try {
-            const full = await judilibre('decision', { id: d.id });
-            return {
-              ...d,
-              fullText: (full.text || '').slice(0, 3000),
-              permalink: d.permalink || `https://www.courdecassation.fr/decision/${d.id}`
-            };
-          } catch(e) {
-            return { ...d, fullText: d.highlights?.text?.[0] || '', permalink: `https://www.courdecassation.fr/decision/${d.id}` };
-          }
-        })
-      );
-
-      allDecisions.push(...enriched);
-      totalAnalyzed += enriched.length;
-      send({ type: 'progress', total: totalAnalyzed, query: q, found: enriched.length });
-
-      // Évalue tous les 10 JP si on en a assez
-      if (totalAnalyzed >= 10 && totalAnalyzed % 10 === 0) {
-        send({ type: 'evaluating', total: totalAnalyzed });
-        const eval_ = await evaluateJP(question, allDecisions);
-        if (eval_.sufficient) {
-          sufficient = true;
-          send({ type: 'sufficient', total: totalAnalyzed });
-          break;
-        }
-      }
-
-      // Page suivante ou requête suivante
-      if (decisions.length < 10 || page >= 4) {
-        queryIdx++;
-        page = 0;
-      } else {
-        page++;
-      }
-
-    } catch(e) {
-      queryIdx++;
-      page = 0;
-    }
-  }
-
-  return allDecisions;
 }
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -236,94 +99,153 @@ app.get('/api/healthcheck', async (req, res) => {
   } catch(err) { res.status(502).json({ ok: false, error: err.message }); }
 });
 
-// Qualification des faits
+// Qualification
 app.post('/api/qualify', async (req, res) => {
   const { facts } = req.body;
   if (!facts) return res.status(400).json({ error: 'Faits manquants' });
-
   try {
     const raw = await claude([{
       role: 'user',
       content: `Tu es un juriste français expert. Analyse ces faits et identifie les problèmes de droit.
 
-RÈGLES ABSOLUES :
+RÈGLES :
 - Chaque question = UN problème de droit distinct avec sa propre règle juridique autonome
-- Pas de recoupement entre questions : si deux questions ont la même règle de droit → fusionner
-- Maximum 5 questions
-- Formuler comme une vraie question juridique (pas un titre de cours)
-- Chaque question doit pouvoir être résolue indépendamment des autres
+- Pas de recoupement : si deux questions ont la même règle → fusionner
+- Maximum 5 questions, minimum 2
+- Question = vraie question juridique à trancher, pas un titre de cours
 
 JSON strict sans markdown :
 {
-  "resume_faits": "3-5 phrases, faits purs sans qualification juridique",
+  "resume_faits": "3-5 phrases, faits purs",
   "questions_droit": [
-    {
-      "id": 1,
-      "titre": "Titre court",
-      "description": "Question juridique précise à trancher",
-      "branches": ["droit commercial"],
-      "pertinence": "Pourquoi distincte des autres questions"
-    }
+    { "id": 1, "titre": "Titre court", "description": "Question précise", "branches": ["droit commercial"] }
   ]
 }
 
 Faits : ${facts}`
     }], 1500);
-
-    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
-    res.json(parsed);
-  } catch(e) {
-    res.status(500).json({ error: e.message });
-  }
+    res.json(JSON.parse(raw.replace(/```json|```/g, '').trim()));
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Analyse complète avec SSE (streaming)
-app.get('/api/analyze-stream', async (req, res) => {
-  const { facts, questions: questionsRaw } = req.query;
-  if (!facts || !questionsRaw) return res.status(400).json({ error: 'Données manquantes' });
+// Étape 1 : génère les requêtes pour une question
+app.post('/api/get-queries', async (req, res) => {
+  const { question, facts } = req.body;
+  try {
+    const raw = await claude([{
+      role: 'user',
+      content: `Juriste français. Génère des requêtes JUDILIBRE pour cette question juridique.
+Question : "${question.titre}" — ${question.description}
+Faits : ${facts}
 
-  const questions = JSON.parse(decodeURIComponent(questionsRaw));
+Règles :
+- 2-4 mots par requête, termes concrets qui apparaissent dans les décisions
+- 4 à 6 requêtes, de la plus spécifique à la plus large
 
-  res.setHeader('Content-Type', 'text/event-stream');
-  res.setHeader('Cache-Control', 'no-cache');
-  res.setHeader('Connection', 'keep-alive');
-  res.flushHeaders();
+JSON strict : {"requetes": ["req1", "req2", ...]}`
+    }], 400);
+    const parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    res.json(parsed);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
-  const send = (data) => {
-    res.write(`data: ${JSON.stringify(data)}\n\n`);
-  };
+// Étape 2 : cherche une page de JP pour une requête donnée
+app.post('/api/search-jp', async (req, res) => {
+  const { query, page = 0 } = req.body;
+  try {
+    const data = await judilibre('search', { query, page_size: 10, page });
+    const decisions = data.results || [];
+
+    // Récupère texte complet en parallèle (max 5 pour pas dépasser timeout)
+    const enriched = await Promise.all(
+      decisions.slice(0, 5).map(async d => {
+        try {
+          const full = await judilibre('decision', { id: d.id });
+          return {
+            id: d.id,
+            date: d.date || d.decision_date,
+            jurisdiction: d.jurisdiction,
+            chamber: d.chamber,
+            solution: d.solution,
+            permalink: d.permalink || `https://www.courdecassation.fr/decision/${d.id}`,
+            excerpt: d.highlights?.text?.[0] || '',
+            fullText: (full.text || '').slice(0, 2000)
+          };
+        } catch(e) {
+          return {
+            id: d.id,
+            date: d.date || d.decision_date,
+            jurisdiction: d.jurisdiction,
+            chamber: d.chamber,
+            solution: d.solution,
+            permalink: d.permalink || `https://www.courdecassation.fr/decision/${d.id}`,
+            excerpt: d.highlights?.text?.[0] || '',
+            fullText: ''
+          };
+        }
+      })
+    );
+
+    res.json({ decisions: enriched, total: data.total || 0, has_more: decisions.length === 10 });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Étape 3 : évalue si les JP sont suffisantes
+app.post('/api/evaluate-jp', async (req, res) => {
+  const { question, decisions } = req.body;
+  if (!decisions?.length) return res.json({ sufficient: false });
+  try {
+    const sample = decisions.slice(0, 8).map((d, i) =>
+      `[${i+1}] ${d.jurisdiction||''} ${d.chamber||''} ${d.date||''} : ${d.fullText?.slice(0, 400) || d.excerpt}`
+    ).join('\n');
+    const raw = await claude([{
+      role: 'user',
+      content: `Question : "${question.titre}" — ${question.description}
+
+Décisions trouvées :
+${sample}
+
+Ces décisions répondent-elles directement à la question posée ?
+JSON strict : {"sufficient": true/false, "reason": "court"}`
+    }], 200);
+    res.json(JSON.parse(raw.replace(/```json|```/g, '').trim()));
+  } catch(e) { res.json({ sufficient: false }); }
+});
+
+// Étape 4 : génère nouvelles requêtes si insuffisant
+app.post('/api/new-queries', async (req, res) => {
+  const { question, tried_queries } = req.body;
+  try {
+    const raw = await claude([{
+      role: 'user',
+      content: `Question juridique : "${question.titre}"
+Requêtes déjà essayées sans résultat suffisant : ${tried_queries.join(', ')}
+Génère 3 nouvelles requêtes DIFFÉRENTES pour JUDILIBRE (2-4 mots, termes concrets).
+JSON strict : {"requetes": ["req1","req2","req3"]}`
+    }], 200);
+    res.json(JSON.parse(raw.replace(/```json|```/g, '').trim()));
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+// Étape 5 : rédige l'analyse finale
+app.post('/api/write-analysis', async (req, res) => {
+  const { question, facts, decisions, lois } = req.body;
+
+  const jpContext = decisions.slice(0, 20).map((d, i) =>
+    `[${i+1}] ${d.jurisdiction||''} ${d.chamber||''} ${d.date||''} (${d.permalink}) :\n${d.fullText?.slice(0, 1500) || d.excerpt}`
+  ).join('\n\n');
+
+  const loiContext = lois?.length
+    ? 'TEXTES DE LOI :\n' + lois.map(l => `${l.titre||''} : ${l.extract||''}`).join('\n')
+    : '';
 
   try {
-    const allResults = [];
+    const analysis = await claude([{
+      role: 'user',
+      content: `Tu es un juriste français expert. Rédige l'analyse de cette seule question en syllogisme juridique.
 
-    for (let i = 0; i < questions.length; i++) {
-      const q = questions[i];
-      send({ type: 'question_start', idx: i, question: q });
-
-      // Recherche JP itérative
-      const decisions = await iterativeJPSearch(q, facts, send);
-
-      // Recherche loi
-      send({ type: 'status', msg: 'Recherche des textes de loi...' });
-      const lois = await legifranceSearch(q.titre + ' ' + (q.branches?.[0] || ''));
-
-      // Rédaction syllogisme
-      send({ type: 'status', msg: 'Rédaction de l\'analyse juridique...' });
-
-      const jpContext = decisions.slice(0, 20).map((d, idx) =>
-        `[${idx+1}] ${d.jurisdiction || ''} ${d.chamber || ''} ${d.date || ''} (${d.permalink}) :\n${d.fullText?.slice(0, 1000) || d.excerpt || ''}`
-      ).join('\n\n');
-
-      const loiContext = lois.length
-        ? 'TEXTES DE LOI :\n' + lois.map(l => `${l.titre || ''} : ${l.extract || ''}`).join('\n')
-        : '';
-
-      const analysis = await claude([{
-        role: 'user',
-        content: `Tu es un juriste français expert. Rédige l'analyse de cette question en syllogisme juridique strict.
-
-QUESTION : "${q.titre}"
-${q.description}
+QUESTION : "${question.titre}"
+${question.description}
 
 FAITS : ${facts}
 
@@ -332,37 +254,29 @@ ${loiContext}
 JURISPRUDENCE (${decisions.length} décisions analysées) :
 ${jpContext}
 
-FORMAT OBLIGATOIRE — syllogisme :
+FORMAT OBLIGATOIRE :
 
-**Majeure — La règle de droit**
-La règle applicable, les articles de loi (avec numéros précis), et la jurisprudence pertinente. Pour chaque décision citée, intègre le lien directement après la citation : [Cass. com., 12 jan. 2020](URL). Ne cite que les décisions DIRECTEMENT pertinentes à cette question.
+## Majeure — La règle de droit
+Règle applicable : articles de loi (numéros précis) et jurisprudence. Pour chaque décision citée, intègre le lien : [Cass. com., 12 jan. 2020](URL). Ne cite que les décisions DIRECTEMENT pertinentes.
 
-**Mineure — En l'espèce**
-"En l'espèce," puis application aux faits concrets. Qualifie chaque élément factuel.
+## Mineure — En l'espèce
+"En l'espèce," puis qualification des faits concrets par rapport à la règle.
 
-**Conclusion — Dès lors**
-"Dès lors," puis réponse nette. Si la réponse n'est pas tranchée en jurisprudence, nuance et expose les deux positions.
+## Conclusion — Dès lors
+"Dès lors," puis réponse nette. Si jurisprudence contradictoire ou insuffisante : nuance les deux positions clairement.
 
 RÈGLES :
-- Cette question SEULEMENT, pas les autres
-- Liens des décisions intégrés dans le texte, pas en section séparée
-- Si JP insuffisante : le dire et raisonner sur les textes
-- Pas d'introduction générale, pas de recommandations`
-      }], 2500);
+- Cette question UNIQUEMENT
+- Liens des décisions intégrés dans le texte
+- Si JP insuffisante : raisonner sur les textes et le dire
+- Pas d'introduction ni de recommandations stratégiques`
+    }], 2500);
 
-      allResults.push({ question: q, analysis, decisions_count: decisions.length, lois });
-      send({ type: 'question_done', idx: i, analysis, decisions_count: decisions.length });
-    }
-
-    send({ type: 'done', results: allResults });
-  } catch(e) {
-    send({ type: 'error', message: e.message });
-  }
-
-  res.end();
+    res.json({ analysis });
+  } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
-// Chat libre
+// Chat
 app.post('/api/chat', async (req, res) => {
   const { message, history = [], context = '' } = req.body;
   try {
@@ -378,5 +292,4 @@ app.listen(PORT, () => {
   console.log(`Jurisxium running on port ${PORT}`);
   console.log(`ANTHROPIC_KEY: ${ANTHROPIC_KEY ? 'OK' : 'MANQUANTE'}`);
   console.log(`JUDILIBRE_KEY: ${JUDILIBRE_KEY ? 'OK' : 'MANQUANTE'}`);
-  console.log(`OAUTH: ${OAUTH_CLIENT_ID ? 'OK' : 'MANQUANT'}`);
 });
