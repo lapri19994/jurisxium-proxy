@@ -16,7 +16,7 @@ const OAUTH_URL       = 'https://oauth.piste.gouv.fr/api/oauth/token';
 
 app.use(cors({ origin: '*', methods: ['GET', 'POST', 'OPTIONS'], allowedHeaders: ['Content-Type'] }));
 app.options('*', cors());
-app.use(express.json());
+app.use(express.json({ limit: "10mb" }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 let oauthToken = null;
@@ -168,9 +168,10 @@ app.post('/api/write-analysis', async function(req, res) {
   const lois = req.body.lois;
 
   // Récupère texte complet des 8 meilleures décisions séquentiellement
+  const decisionsSlice = decisions.slice(0, 8);
   const enriched = [];
-  for (let i = 0; i < Math.min(decisions.length, 8); i++) {
-    const d = decisions[i];
+  for (let i = 0; i < decisionsSlice.length; i++) {
+    const d = decisionsSlice[i];
     try {
       const full = await judilibre('decision', { id: d.id });
       enriched.push(Object.assign({}, d, { fullText: (full.text || '').slice(0, 2000) }));
