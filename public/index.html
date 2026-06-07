@@ -8,7 +8,7 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
   header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1rem 2rem; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.3px; }
+  header h1 { font-size: 1.1rem; font-weight: 700; }
   .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-left: 4px; }
   .dot.off { background: #ef4444; }
   main { max-width: 780px; margin: 2.5rem auto; padding: 0 1rem; }
@@ -22,11 +22,20 @@
   button.primary:disabled { opacity: 0.5; cursor: default; }
   .loading { text-align: center; color: #888; padding: 2.5rem 0; font-size: 14px; }
   .error { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 1rem; }
-  .keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; align-items: center; }
-  .keywords-label { font-size: 12px; color: #999; margin-right: 2px; }
-  .kw { font-size: 12px; background: #ede9fe; color: #4c1d95; padding: 3px 10px; border-radius: 99px; }
-  .answer-section { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-  .answer-section h2 { font-size: 13px; font-weight: 600; color: #6366f1; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; }
+
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; align-items: center; }
+  .tags-label { font-size: 12px; color: #999; margin-right: 2px; }
+  .tag { font-size: 12px; padding: 3px 10px; border-radius: 99px; }
+  .tag-purple { background: #ede9fe; color: #4c1d95; }
+  .tag-blue { background: #dbeafe; color: #1e40af; }
+  .tag-green { background: #d1fae5; color: #065f46; }
+
+  .section { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
+  .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; }
+  .section-title.purple { color: #6366f1; }
+  .section-title.blue { color: #2563eb; }
+  .section-title.green { color: #16a34a; }
+
   .answer-body { font-size: 14px; line-height: 1.85; color: #1a1a1a; }
   .answer-body h3 { font-size: 15px; font-weight: 600; margin: 1.25rem 0 0.4rem; color: #111; }
   .answer-body p { margin-bottom: 0.75rem; }
@@ -35,10 +44,9 @@
   .answer-body strong { font-weight: 600; }
   .answer-body a.dec-link { color: #6366f1; font-size: 12px; text-decoration: none; border: 1px solid #c7d2fe; border-radius: 4px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
   .answer-body a.dec-link:hover { background: #ede9fe; }
-  .sources-section { margin-bottom: 2rem; }
-  .sources-section h2 { font-size: 13px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
-  .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; }
-  .card:hover { border-color: #a5b4fc; }
+
+  .card { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; }
+  .card:hover { border-color: #a5b4fc; background: #fff; }
   .card-title { font-size: 13px; font-weight: 600; color: #1a1a1a; text-decoration: none; display: block; margin-bottom: 6px; }
   .card-title:hover { color: #6366f1; }
   .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
@@ -49,6 +57,14 @@
   .b-solution { background: #dbeafe; color: #1e40af; }
   .excerpt { font-size: 12px; color: #666; line-height: 1.6; }
   .excerpt em { background: #fef9c3; color: #713f12; font-style: normal; padding: 0 2px; border-radius: 2px; }
+
+  .loi-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; }
+  .loi-card:hover { border-color: #4ade80; }
+  .loi-title { font-size: 13px; font-weight: 600; color: #14532d; text-decoration: none; display: block; margin-bottom: 4px; }
+  .loi-title:hover { color: #16a34a; }
+  .loi-nature { font-size: 11px; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 99px; display: inline-block; margin-bottom: 6px; }
+  .loi-extract { font-size: 12px; color: #166534; line-height: 1.6; }
+
   .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
   .pagination button { padding: 5px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
   .pagination button.active { background: #6366f1; color: #fff; border-color: #6366f1; font-weight: 600; }
@@ -64,7 +80,7 @@
 
 <main>
   <div class="ask-box">
-    <textarea id="question" placeholder="Posez votre question de droit... Ex : La saisine d'une juridiction étrangère interrompt-elle la prescription en France ?"></textarea>
+    <textarea id="question" placeholder="Posez votre question de droit... Ex : Un employeur peut-il licencier pour faute grave sans avertissement préalable ?"></textarea>
     <div class="ask-footer">
       <span class="hint">Ctrl+Entrée pour envoyer</span>
       <button class="primary" id="btnAsk" onclick="doAsk()">Analyser</button>
@@ -101,8 +117,8 @@ function decisionTitle(d) {
 }
 
 function renderMarkdown(text, decisions) {
-  const decisionMap = {};
-  decisions.forEach((d, i) => { decisionMap[i + 1] = d; });
+  const map = {};
+  decisions.forEach((d, i) => { map[i + 1] = d; });
 
   let html = text
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -121,7 +137,7 @@ function renderMarkdown(text, decisions) {
   html = html.replace(/<p>(<ul>)/g, '$1').replace(/<\/ul><\/p>/g, '</ul>');
 
   html = html.replace(/D[ée]cision\s+(\d+)/g, (match, num) => {
-    const d = decisionMap[parseInt(num)];
+    const d = map[parseInt(num)];
     if (!d) return match;
     const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
     return match + '<a class="dec-link" href="' + url + '" target="_blank">↗ voir</a>';
@@ -142,6 +158,15 @@ function cardHTML(d, i) {
       (d.solution ? '<span class="b b-solution">' + d.solution + '</span>' : '') +
     '</div>' +
     (d.excerpt ? '<div class="excerpt">' + d.excerpt + '</div>' : '') +
+    '</div>';
+}
+
+function loiHTML(l) {
+  const url = l.url || ('https://www.legifrance.gouv.fr/search/all?query=' + encodeURIComponent(l.titre));
+  return '<div class="loi-card">' +
+    '<a class="loi-title" href="' + url + '" target="_blank">' + (l.titre || 'Texte de loi') + ' ↗</a>' +
+    (l.nature ? '<span class="loi-nature">' + l.nature + '</span>' : '') +
+    (l.extract ? '<div class="loi-extract">' + l.extract.slice(0, 300) + '...</div>' : '') +
     '</div>';
 }
 
@@ -173,7 +198,7 @@ async function doAsk() {
   const btn = document.getElementById('btnAsk');
   btn.disabled = true;
   btn.textContent = 'Analyse...';
-  document.getElementById('results').innerHTML = '<div class="loading">Recherche et analyse des décisions en cours...</div>';
+  document.getElementById('results').innerHTML = '<div class="loading">Qualification juridique → recherche jurisprudence + textes de loi → analyse en cours...</div>';
 
   try {
     const res = await fetch('/api/ask', {
@@ -187,20 +212,36 @@ async function doAsk() {
     allDecisions = data.decisions || [];
     decPage = 0;
 
-    const keywords = data.keywords.trim().split(/\s+/);
-    let html = '<div class="keywords"><span class="keywords-label">Recherche :</span>' +
-      keywords.map(k => '<span class="kw">' + k + '</span>').join('') + '</div>';
+    let html = '';
 
-    html += '<div class="answer-section"><h2>Analyse juridique</h2><div class="answer-body">' +
-      renderMarkdown(data.answer, allDecisions) + '</div></div>';
+    // Tags qualification
+    if (data.qualification) {
+      const q = data.qualification;
+      html += '<div class="tags">';
+      (q.branches || []).forEach(b => { html += '<span class="tag tag-purple">' + b + '</span>'; });
+      (q.notions || []).forEach(n => { html += '<span class="tag tag-blue">' + n + '</span>'; });
+      (q.codes || []).forEach(c => { html += '<span class="tag tag-green">' + c + '</span>'; });
+      html += '</div>';
+    }
 
+    // Analyse juridique
+    html += '<div class="section"><div class="section-title purple">Analyse juridique</div>';
+    html += '<div class="answer-body">' + renderMarkdown(data.answer, allDecisions) + '</div></div>';
+
+    // Textes de loi
+    if (data.lois && data.lois.length) {
+      html += '<div class="section"><div class="section-title green">Textes de loi (' + data.lois.length + ')</div>';
+      html += data.lois.map(loiHTML).join('');
+      html += '</div>';
+    }
+
+    // Jurisprudence
     if (allDecisions.length) {
-      html += '<div class="sources-section"><h2>Décisions sources (' + allDecisions.length + ')</h2>';
+      html += '<div class="section"><div class="section-title blue">Jurisprudence (' + allDecisions.length + ' décisions)</div>';
       html += '<div id="decContainer"></div></div>';
     }
 
     document.getElementById('results').innerHTML = html;
-
     if (allDecisions.length) renderDecisions(0);
 
   } catch(err) {
