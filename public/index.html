@@ -12,20 +12,19 @@
   .badge { font-size: 12px; padding: 2px 8px; border-radius: 99px; }
   .badge-green { background: #d1fae5; color: #065f46; }
   .badge-red { background: #fee2e2; color: #991b1b; }
-  nav { background: #fff; border-bottom: 1px solid #e5e5e5; display: flex; }
-  nav button { padding: 12px 24px; border: none; background: none; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; }
-  nav button.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 500; }
   main { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
-  .panel { display: none; }
-  .panel.active { display: block; }
-  input, select, textarea { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+  input, textarea { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
   input:focus, textarea:focus { border-color: #6366f1; }
   button.primary { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
   button.primary:hover { background: #4f46e5; }
   button.primary:disabled { opacity: 0.5; cursor: default; }
-  .row { display: flex; gap: 8px; margin-bottom: 1rem; }
-  .filters { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .meta { font-size: 13px; color: #666; margin-bottom: 1rem; }
+  .ask-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .ask-box textarea { width: 100%; height: 90px; resize: vertical; margin-bottom: 10px; }
+  .hint { font-size: 12px; color: #aaa; margin-bottom: 10px; }
+  .answer-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; font-size: 14px; line-height: 1.8; white-space: pre-wrap; }
+  .keywords { font-size: 12px; color: #888; margin-bottom: 1rem; }
+  .keywords span { background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 99px; margin-right: 4px; font-size: 11px; }
+  .sources-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
   .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
   .card:hover { border-color: #a5b4fc; }
   .card-title { font-size: 14px; font-weight: 600; color: #1a1a1a; text-decoration: none; display: block; margin-bottom: 8px; }
@@ -38,18 +37,8 @@
   .b-solution { background: #dbeafe; color: #1e40af; }
   .excerpt { font-size: 13px; color: #555; line-height: 1.6; }
   .excerpt em { background: #fef9c3; color: #713f12; font-style: normal; padding: 0 2px; border-radius: 2px; }
-  .pagination { display: flex; gap: 6px; justify-content: center; margin: 2rem 0; flex-wrap: wrap; }
-  .pagination button { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
-  .pagination button.active { background: #6366f1; color: #fff; border-color: #6366f1; font-weight: 600; }
-  .pagination button:disabled { opacity: 0.4; cursor: default; }
-  .ask-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
-  .ask-box textarea { width: 100%; height: 80px; resize: vertical; margin-bottom: 10px; }
-  .answer-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; white-space: pre-wrap; font-size: 14px; line-height: 1.7; }
-  .keywords { font-size: 12px; color: #888; margin-bottom: 1rem; }
-  .keywords span { background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 99px; margin-right: 4px; font-size: 11px; }
   .loading { text-align: center; color: #888; padding: 2rem 0; font-size: 14px; }
   .error { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 1rem; }
-  .sources-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
 </style>
 </head>
 <body>
@@ -59,64 +48,19 @@
   <span id="statusBadge" class="badge badge-green">connecté</span>
 </header>
 
-<nav>
-  <button class="active" onclick="showPanel('search', this)">🔍 Recherche</button>
-  <button onclick="showPanel('ask', this)">🤖 Question IA</button>
-</nav>
-
-<main>
-
-  <div id="panel-search" class="panel active">
-    <div class="row" style="margin-top:1rem;">
-      <input id="q" type="text" placeholder="Rechercher une jurisprudence..." style="flex:1;" />
-      <button class="primary" onclick="doSearch(1)">Rechercher</button>
-    </div>
-    <div class="filters">
-      <select id="jurisdiction">
-        <option value="">Toutes juridictions</option>
-        <option value="cc">Cour de cassation</option>
-        <option value="ca">Cour d'appel</option>
-        <option value="tj">Tribunal judiciaire</option>
-      </select>
-      <select id="order">
-        <option value="score">Pertinence</option>
-        <option value="desc">Plus récentes</option>
-        <option value="asc">Plus anciennes</option>
-      </select>
-      <select id="pageSize">
-        <option value="10">10 / page</option>
-        <option value="20">20 / page</option>
-        <option value="50">50 / page</option>
-      </select>
-    </div>
-    <div id="meta" class="meta"></div>
-    <div id="results"></div>
-    <div id="pagination" class="pagination"></div>
+<main style="margin-top:2rem;">
+  <div class="ask-box">
+    <textarea id="question" placeholder="Ex : Quels sont les délais de prescription en matière commerciale ? Un employeur peut-il licencier pour faute grave sans mise en garde préalable ?"></textarea>
+    <div class="hint">Ctrl+Entrée pour envoyer</div>
+    <button class="primary" id="btnAsk" onclick="doAsk()">Analyser avec l'IA</button>
   </div>
-
-  <div id="panel-ask" class="panel">
-    <div class="ask-box" style="margin-top:1rem;">
-      <textarea id="question" placeholder="Ex : Quels sont les délais de prescription en matière commerciale ? Quand peut-on licencier pour faute grave ?"></textarea>
-      <button class="primary" id="btnAsk" onclick="doAsk()">Analyser avec l'IA</button>
-    </div>
-    <div id="askResults"></div>
-  </div>
-
+  <div id="askResults"></div>
 </main>
 
 <script>
-let currentPage = 1;
-let currentTotal = 0;
-
-function showPanel(name, btn) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-  document.getElementById('panel-' + name).classList.add('active');
-  btn.classList.add('active');
-}
-
-document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(1); });
-document.getElementById('question').addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) doAsk(); });
+document.getElementById('question').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.ctrlKey) doAsk();
+});
 
 async function checkStatus() {
   try {
@@ -131,38 +75,27 @@ async function checkStatus() {
   }
 }
 
-async function doSearch(page) {
-  const q = document.getElementById('q').value.trim();
-  if (!q) return;
-  currentPage = page;
-  document.getElementById('results').innerHTML = '<div class="loading">Recherche en cours...</div>';
-  document.getElementById('meta').textContent = '';
-  document.getElementById('pagination').innerHTML = '';
+function cardTitle(d) {
+  const juris = d.jurisdiction ? d.jurisdiction.toUpperCase() : '';
+  const chamber = d.chamber ? ', ' + d.chamber : '';
+  const date = d.date ? ' — ' + new Date(d.date).toLocaleDateString('fr-FR') : '';
+  const solution = d.solution ? ' (' + d.solution + ')' : '';
+  return (juris + chamber + date + solution) || d.id;
+}
 
-  const params = new URLSearchParams({
-    query: q,
-    page: page - 1,
-    page_size: document.getElementById('pageSize').value
-  });
-  const jurisdiction = document.getElementById('jurisdiction').value;
-  const order = document.getElementById('order').value;
-  if (jurisdiction) params.set('jurisdiction', jurisdiction);
-  if (order !== 'score') params.set('order', order);
-
-  try {
-    const res = await fetch('/api/search?' + params);
-    const data = await res.json();
-    if (data.error) throw new Error(data.error);
-    currentTotal = data.total || 0;
-    const pageSize = parseInt(document.getElementById('pageSize').value);
-    const from = (page - 1) * pageSize + 1;
-    const to = Math.min(page * pageSize, data.total);
-    document.getElementById('meta').textContent = data.total.toLocaleString('fr-FR') + ' décisions · ' + from + '–' + to + ' affichées · ' + data.took + 'ms';
-    renderCards(data.results || [], 'results');
-    renderPagination(page, pageSize);
-  } catch(err) {
-    document.getElementById('results').innerHTML = '<div class="error">Erreur : ' + err.message + '</div>';
-  }
+function cardHTML(d) {
+  const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
+  const date = d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '';
+  return `<div class="card">
+    <a class="card-title" href="${url}" target="_blank">${cardTitle(d)} ↗</a>
+    <div class="badges">
+      ${date ? '<span class="b b-date">📅 ' + date + '</span>' : ''}
+      ${d.jurisdiction ? '<span class="b b-juris">' + d.jurisdiction + '</span>' : ''}
+      ${d.chamber ? '<span class="b b-chamber">' + d.chamber + '</span>' : ''}
+      ${d.solution ? '<span class="b b-solution">' + d.solution + '</span>' : ''}
+    </div>
+    ${d.excerpt ? '<div class="excerpt">' + d.excerpt + '</div>' : ''}
+  </div>`;
 }
 
 async function doAsk() {
@@ -196,47 +129,6 @@ async function doAsk() {
 
   btn.disabled = false;
   btn.textContent = 'Analyser avec l\'IA';
-}
-
-function cardHTML(d) {
-  const title = d.title || d.id || 'Décision';
-  const date = d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '';
-  const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
-  return `<div class="card">
-    <a class="card-title" href="${url}" target="_blank">${title} ↗</a>
-    <div class="badges">
-      ${date ? '<span class="b b-date">📅 ' + date + '</span>' : ''}
-      ${d.jurisdiction ? '<span class="b b-juris">' + d.jurisdiction + '</span>' : ''}
-      ${d.chamber ? '<span class="b b-chamber">' + d.chamber + '</span>' : ''}
-      ${d.solution ? '<span class="b b-solution">' + d.solution + '</span>' : ''}
-    </div>
-    ${d.excerpt ? '<div class="excerpt">' + d.excerpt + '</div>' : ''}
-  </div>`;
-}
-
-function renderCards(results, containerId) {
-  if (!results.length) { document.getElementById(containerId).innerHTML = '<div class="loading">Aucun résultat.</div>'; return; }
-  document.getElementById(containerId).innerHTML = results.map(cardHTML).join('');
-}
-
-function renderPagination(page, pageSize) {
-  const totalPages = Math.ceil(currentTotal / pageSize);
-  if (totalPages <= 1) return;
-  const pages = [];
-  const start = Math.max(1, page - 2);
-  const end = Math.min(totalPages, page + 2);
-  if (start > 1) pages.push(1);
-  if (start > 2) pages.push('...');
-  for (let i = start; i <= end; i++) pages.push(i);
-  if (end < totalPages - 1) pages.push('...');
-  if (end < totalPages) pages.push(totalPages);
-  document.getElementById('pagination').innerHTML =
-    '<button onclick="doSearch(' + (page-1) + ')" ' + (page===1?'disabled':'') + '>←</button>' +
-    pages.map(p => typeof p === 'number'
-      ? '<button onclick="doSearch(' + p + ')" class="' + (p===page?'active':'') + '">' + p + '</button>'
-      : '<span style="padding:6px 4px;color:#aaa">...</span>'
-    ).join('') +
-    '<button onclick="doSearch(' + (page+1) + ')" ' + (page===totalPages?'disabled':'') + '>→</button>';
 }
 
 checkStatus();
