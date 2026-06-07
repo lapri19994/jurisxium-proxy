@@ -5,251 +5,482 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Jurisxium</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
-  header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1rem 2rem; display: flex; align-items: center; gap: 12px; }
-  header h1 { font-size: 1.1rem; font-weight: 700; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #22c55e; margin-left: 4px; }
-  .dot.off { background: #ef4444; }
-  main { max-width: 780px; margin: 2.5rem auto; padding: 0 1rem; }
-  .ask-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem; margin-bottom: 2rem; }
-  textarea { width: 100%; height: 88px; resize: vertical; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; line-height: 1.6; }
-  textarea:focus { border-color: #6366f1; }
-  .ask-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
-  .hint { font-size: 12px; color: #bbb; }
-  button.primary { padding: 9px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; }
-  button.primary:hover { background: #4f46e5; }
-  button.primary:disabled { opacity: 0.5; cursor: default; }
-  .loading { text-align: center; color: #888; padding: 2.5rem 0; font-size: 14px; }
-  .error { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 1rem; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; min-height: 100vh; }
 
-  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; align-items: center; }
-  .tags-label { font-size: 12px; color: #999; margin-right: 2px; }
-  .tag { font-size: 12px; padding: 3px 10px; border-radius: 99px; }
-  .tag-purple { background: #ede9fe; color: #4c1d95; }
-  .tag-blue { background: #dbeafe; color: #1e40af; }
-  .tag-green { background: #d1fae5; color: #065f46; }
+header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0.875rem 2rem; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
+header h1 { font-size: 1rem; font-weight: 700; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
+.dot.off { background: #ef4444; }
 
-  .section { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.5rem; margin-bottom: 1.25rem; }
-  .section-title { font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 1rem; }
-  .section-title.purple { color: #6366f1; }
-  .section-title.blue { color: #2563eb; }
-  .section-title.green { color: #16a34a; }
+.layout { display: flex; height: calc(100vh - 49px); }
 
-  .answer-body { font-size: 14px; line-height: 1.85; color: #1a1a1a; }
-  .answer-body h3 { font-size: 15px; font-weight: 600; margin: 1.25rem 0 0.4rem; color: #111; }
-  .answer-body p { margin-bottom: 0.75rem; }
-  .answer-body ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
-  .answer-body li { margin-bottom: 0.3rem; }
-  .answer-body strong { font-weight: 600; }
-  .answer-body a.dec-link { color: #6366f1; font-size: 12px; text-decoration: none; border: 1px solid #c7d2fe; border-radius: 4px; padding: 1px 6px; margin-left: 4px; vertical-align: middle; white-space: nowrap; }
-  .answer-body a.dec-link:hover { background: #ede9fe; }
+/* Sidebar */
+.sidebar { width: 260px; min-width: 260px; background: #fff; border-right: 1px solid #e5e5e5; display: flex; flex-direction: column; overflow: hidden; }
+.sidebar-header { padding: 1rem; border-bottom: 1px solid #e5e5e5; font-size: 12px; font-weight: 600; color: #999; text-transform: uppercase; letter-spacing: 0.5px; }
+.questions-list { flex: 1; overflow-y: auto; padding: 0.5rem; }
+.q-item { padding: 10px 12px; border-radius: 8px; cursor: pointer; font-size: 13px; color: #555; margin-bottom: 4px; border: 1px solid transparent; }
+.q-item:hover { background: #f5f5f5; }
+.q-item.active { background: #ede9fe; color: #4c1d95; border-color: #c4b5fd; }
+.q-item.done { color: #16a34a; }
+.q-item .q-num { font-size: 11px; font-weight: 600; margin-bottom: 2px; }
+.q-item .q-title { font-size: 12px; line-height: 1.4; }
 
-  .card { background: #f9f9f9; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; }
-  .card:hover { border-color: #a5b4fc; background: #fff; }
-  .card-title { font-size: 13px; font-weight: 600; color: #1a1a1a; text-decoration: none; display: block; margin-bottom: 6px; }
-  .card-title:hover { color: #6366f1; }
-  .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
-  .b { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
-  .b-date { background: #f3f4f6; color: #374151; }
-  .b-juris { background: #d1fae5; color: #065f46; }
-  .b-chamber { background: #ede9fe; color: #4c1d95; }
-  .b-solution { background: #dbeafe; color: #1e40af; }
-  .excerpt { font-size: 12px; color: #666; line-height: 1.6; }
-  .excerpt em { background: #fef9c3; color: #713f12; font-style: normal; padding: 0 2px; border-radius: 2px; }
+/* Main content */
+.main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+.content { flex: 1; padding: 1.5rem; max-width: 820px; width: 100%; margin: 0 auto; }
 
-  .loi-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; }
-  .loi-card:hover { border-color: #4ade80; }
-  .loi-title { font-size: 13px; font-weight: 600; color: #14532d; text-decoration: none; display: block; margin-bottom: 4px; }
-  .loi-title:hover { color: #16a34a; }
-  .loi-nature { font-size: 11px; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 99px; display: inline-block; margin-bottom: 6px; }
-  .loi-extract { font-size: 12px; color: #166534; line-height: 1.6; }
+/* Chat */
+.chat-area { border-top: 1px solid #e5e5e5; background: #fff; padding: 1rem 1.5rem; }
+.chat-input-row { display: flex; gap: 8px; max-width: 820px; margin: 0 auto; }
+.chat-input-row textarea { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; resize: none; height: 44px; line-height: 1.5; overflow: hidden; }
+.chat-input-row textarea:focus { border-color: #6366f1; }
+button.send { padding: 0 18px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; font-weight: 500; height: 44px; white-space: nowrap; }
+button.send:hover { background: #4f46e5; }
+button.send:disabled { opacity: 0.5; cursor: default; }
 
-  .pagination { display: flex; gap: 6px; justify-content: center; margin-top: 1rem; flex-wrap: wrap; }
-  .pagination button { padding: 5px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
-  .pagination button.active { background: #6366f1; color: #fff; border-color: #6366f1; font-weight: 600; }
-  .pagination button:disabled { opacity: 0.4; cursor: default; }
+/* Blocks */
+.block { margin-bottom: 1.25rem; }
+.block-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
+.block-title.purple { color: #6366f1; }
+.block-title.blue { color: #2563eb; }
+.block-title.green { color: #16a34a; }
+.block-title.gray { color: #888; }
+
+.facts-box { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; font-size: 14px; line-height: 1.7; color: #333; }
+
+.questions-box { display: flex; flex-direction: column; gap: 8px; }
+.question-card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; }
+.question-card .q-badge { font-size: 11px; font-weight: 600; color: #6366f1; margin-bottom: 4px; }
+.question-card .q-text { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+.question-card .q-desc { font-size: 13px; color: #666; line-height: 1.5; }
+.question-card .q-branches { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 8px; }
+.q-branch { font-size: 11px; background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 99px; }
+
+.validate-bar { display: flex; gap: 8px; margin-top: 1rem; flex-wrap: wrap; }
+button.action { padding: 8px 16px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; cursor: pointer; background: #fff; font-family: inherit; }
+button.action:hover { background: #f5f5f5; }
+button.action.primary { background: #6366f1; color: #fff; border-color: #6366f1; }
+button.action.primary:hover { background: #4f46e5; }
+button.action.green { background: #16a34a; color: #fff; border-color: #16a34a; }
+button.action.green:hover { background: #15803d; }
+
+.jp-stats { display: flex; flex-direction: column; gap: 6px; margin-bottom: 1rem; }
+.jp-stat { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.jp-query { background: #f3f4f6; border-radius: 6px; padding: 3px 10px; font-family: monospace; font-size: 12px; color: #374151; }
+.jp-count { color: #6366f1; font-weight: 600; font-size: 12px; white-space: nowrap; }
+
+.analysis-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.25rem 1.5rem; }
+.analysis-body { font-size: 14px; line-height: 1.85; color: #1a1a1a; }
+.analysis-body h3 { font-size: 15px; font-weight: 600; margin: 1.25rem 0 0.4rem; color: #111; }
+.analysis-body p { margin-bottom: 0.75rem; }
+.analysis-body ul { padding-left: 1.25rem; margin-bottom: 0.75rem; }
+.analysis-body li { margin-bottom: 0.3rem; }
+.analysis-body strong { font-weight: 600; }
+
+.dec-cards { display: flex; flex-direction: column; gap: 6px; }
+.dec-card { background: #fafafa; border: 1px solid #e5e5e5; border-radius: 8px; padding: 0.75rem 1rem; }
+.dec-card:hover { border-color: #a5b4fc; background: #fff; }
+.dec-link { font-size: 13px; font-weight: 600; color: #1a1a1a; text-decoration: none; display: block; margin-bottom: 4px; }
+.dec-link:hover { color: #6366f1; }
+.dec-badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 4px; }
+.b { font-size: 11px; padding: 2px 7px; border-radius: 99px; }
+.b-date { background: #f3f4f6; color: #374151; }
+.b-juris { background: #d1fae5; color: #065f46; }
+.b-chamber { background: #ede9fe; color: #4c1d95; }
+.b-solution { background: #dbeafe; color: #1e40af; }
+.dec-excerpt { font-size: 12px; color: #666; line-height: 1.5; }
+.dec-excerpt em { background: #fef9c3; color: #713f12; font-style: normal; padding: 0 2px; }
+
+.loi-card { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 6px; }
+.loi-title { font-size: 13px; font-weight: 600; color: #14532d; text-decoration: none; display: block; margin-bottom: 4px; }
+.loi-title:hover { color: #16a34a; }
+.loi-extract { font-size: 12px; color: #166534; line-height: 1.5; }
+
+.user-msg { background: #ede9fe; border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px; color: #3730a3; margin-bottom: 1rem; align-self: flex-end; max-width: 80%; }
+.ai-msg { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 0.75rem 1rem; font-size: 14px; line-height: 1.7; margin-bottom: 1rem; }
+
+.loading-msg { color: #888; font-size: 13px; font-style: italic; padding: 0.5rem 0; }
+.section-sep { border: none; border-top: 1px solid #f0f0f0; margin: 1.5rem 0; }
+
+/* Initial screen */
+.initial-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; padding: 2rem; text-align: center; }
+.initial-screen h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.5rem; color: #1a1a1a; }
+.initial-screen p { font-size: 14px; color: #888; margin-bottom: 2rem; }
+.initial-screen textarea { width: 100%; max-width: 620px; height: 120px; padding: 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: none; line-height: 1.6; }
+.initial-screen textarea:focus { border-color: #6366f1; }
+.initial-screen button { margin-top: 12px; padding: 10px 28px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; font-weight: 500; }
+.initial-screen button:hover { background: #4f46e5; }
+.initial-screen button:disabled { opacity: 0.5; cursor: default; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>⚖️ Jurisxium</h1>
-  <span id="statusDot" class="dot" title="Connecté"></span>
+  <span id="statusDot" class="dot"></span>
 </header>
 
-<main>
-  <div class="ask-box">
-    <textarea id="question" placeholder="Posez votre question de droit... Ex : Un employeur peut-il licencier pour faute grave sans avertissement préalable ?"></textarea>
-    <div class="ask-footer">
-      <span class="hint">Ctrl+Entrée pour envoyer</span>
-      <button class="primary" id="btnAsk" onclick="doAsk()">Analyser</button>
-    </div>
+<div class="layout">
+
+  <!-- Sidebar questions -->
+  <div class="sidebar" id="sidebar" style="display:none;">
+    <div class="sidebar-header">Questions de droit</div>
+    <div class="questions-list" id="questionsList"></div>
   </div>
-  <div id="results"></div>
-</main>
+
+  <!-- Main -->
+  <div class="main" id="mainArea">
+
+    <!-- Initial screen -->
+    <div class="initial-screen" id="initialScreen">
+      <h2>Analyse juridique</h2>
+      <p>Décrivez votre situation en détail. Jurisxium identifie les questions de droit,<br>recherche la jurisprudence et les textes de loi applicables.</p>
+      <textarea id="factsInput" placeholder="Ex : J'ai vendu des marchandises à une société de mon groupe avec factures mentionnant le prix, le mode de paiement et le RIB. La partie adverse prétend que ces transactions sont des cessions à titre gratuit..."></textarea>
+      <button id="btnStart" onclick="startAnalysis()">Analyser →</button>
+    </div>
+
+    <!-- Analysis screen -->
+    <div class="content" id="analysisContent" style="display:none;"></div>
+
+  </div>
+
+</div>
+
+<!-- Chat bar -->
+<div class="chat-area" id="chatBar" style="display:none;">
+  <div class="chat-input-row">
+    <textarea id="chatInput" placeholder="Posez une question, demandez de creuser une question, de modifier l'analyse..." onkeydown="handleKey(event)"></textarea>
+    <button class="send" id="btnSend" onclick="sendChat()">Envoyer</button>
+  </div>
+</div>
 
 <script>
-const DEC_PER_PAGE = 5;
-let allDecisions = [];
-let decPage = 0;
-
-document.getElementById('question').addEventListener('keydown', e => {
-  if (e.key === 'Enter' && e.ctrlKey) doAsk();
-});
+let state = {
+  facts: '',
+  questions: [],
+  currentQuestionIdx: -1,
+  questionAnalyses: {},
+  history: [],
+  phase: 'initial' // initial | qualify | analyze | chat
+};
 
 async function checkStatus() {
   try {
     const r = await fetch('/api/healthcheck');
     const d = await r.json();
     document.getElementById('statusDot').className = 'dot' + (d.ok ? '' : ' off');
-  } catch(e) {
-    document.getElementById('statusDot').className = 'dot off';
-  }
+  } catch(e) { document.getElementById('statusDot').className = 'dot off'; }
 }
 
-function decisionTitle(d) {
-  const juris = d.jurisdiction ? d.jurisdiction.toUpperCase() : '';
-  const chamber = d.chamber ? ', ' + d.chamber : '';
-  const date = d.date ? ' — ' + new Date(d.date).toLocaleDateString('fr-FR') : '';
-  const solution = d.solution ? ' (' + d.solution + ')' : '';
-  return (juris + chamber + date + solution) || d.id;
+function decTitle(d) {
+  const j = d.jurisdiction ? d.jurisdiction.toUpperCase() : '';
+  const c = d.chamber ? ', ' + d.chamber : '';
+  const dt = d.date ? ' — ' + new Date(d.date).toLocaleDateString('fr-FR') : '';
+  const s = d.solution ? ' (' + d.solution + ')' : '';
+  return (j + c + dt + s) || d.id;
 }
 
-function renderMarkdown(text, decisions) {
-  const map = {};
-  decisions.forEach((d, i) => { map[i + 1] = d; });
-
+function renderMarkdown(text) {
   let html = text
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/^### (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^# (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^- (.+)$/gm, '<li>$1</li>')
-    .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/^(?!<[hul])/gm, '');
-
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^# (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^- (.+)$/gm,'<li>$1</li>')
+    .replace(/(<li>.*<\/li>)/gs,'<ul>$1</ul>')
+    .replace(/\n\n/g,'</p><p>');
   html = '<p>' + html + '</p>';
-  html = html.replace(/<p><\/p>/g, '');
-  html = html.replace(/<p>(<h3>)/g, '$1').replace(/<\/h3><\/p>/g, '</h3>');
-  html = html.replace(/<p>(<ul>)/g, '$1').replace(/<\/ul><\/p>/g, '</ul>');
-
-  html = html.replace(/D[ée]cision\s+(\d+)/g, (match, num) => {
-    const d = map[parseInt(num)];
-    if (!d) return match;
-    const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
-    return match + '<a class="dec-link" href="' + url + '" target="_blank">↗ voir</a>';
-  });
-
+  html = html.replace(/<p><\/p>/g,'').replace(/<p>(<h3>)/g,'$1').replace(/<\/h3><\/p>/g,'</h3>').replace(/<p>(<ul>)/g,'$1').replace(/<\/ul><\/p>/g,'</ul>');
   return html;
 }
 
-function cardHTML(d, i) {
+function decCardHTML(d) {
   const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
   const date = d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '';
-  return '<div class="card">' +
-    '<a class="card-title" href="' + url + '" target="_blank">Décision ' + (i+1) + ' — ' + decisionTitle(d) + ' ↗</a>' +
-    '<div class="badges">' +
-      (date ? '<span class="b b-date">📅 ' + date + '</span>' : '') +
+  return '<div class="dec-card">' +
+    '<a class="dec-link" href="' + url + '" target="_blank">' + decTitle(d) + ' ↗</a>' +
+    '<div class="dec-badges">' +
+      (date ? '<span class="b b-date">' + date + '</span>' : '') +
       (d.jurisdiction ? '<span class="b b-juris">' + d.jurisdiction + '</span>' : '') +
       (d.chamber ? '<span class="b b-chamber">' + d.chamber + '</span>' : '') +
       (d.solution ? '<span class="b b-solution">' + d.solution + '</span>' : '') +
     '</div>' +
-    (d.excerpt ? '<div class="excerpt">' + d.excerpt + '</div>' : '') +
+    (d.excerpt ? '<div class="dec-excerpt">' + d.excerpt + '</div>' : '') +
     '</div>';
 }
 
-function loiHTML(l) {
-  const url = l.url || ('https://www.legifrance.gouv.fr/search/all?query=' + encodeURIComponent(l.titre));
-  return '<div class="loi-card">' +
-    '<a class="loi-title" href="' + url + '" target="_blank">' + (l.titre || 'Texte de loi') + ' ↗</a>' +
-    (l.nature ? '<span class="loi-nature">' + l.nature + '</span>' : '') +
-    (l.extract ? '<div class="loi-extract">' + l.extract.slice(0, 300) + '...</div>' : '') +
-    '</div>';
+function append(html) {
+  document.getElementById('analysisContent').insertAdjacentHTML('beforeend', html);
+  document.getElementById('analysisContent').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'end' });
 }
 
-function renderDecisions(page) {
-  decPage = page;
-  const total = allDecisions.length;
-  const totalPages = Math.ceil(total / DEC_PER_PAGE);
-  const start = page * DEC_PER_PAGE;
-  const slice = allDecisions.slice(start, start + DEC_PER_PAGE);
-
-  let html = slice.map((d, i) => cardHTML(d, start + i)).join('');
-
-  if (totalPages > 1) {
-    html += '<div class="pagination">';
-    html += '<button onclick="renderDecisions(' + (page-1) + ')" ' + (page===0?'disabled':'') + '>←</button>';
-    for (let i = 0; i < totalPages; i++) {
-      html += '<button onclick="renderDecisions(' + i + ')" class="' + (i===page?'active':'') + '">' + (i+1) + '</button>';
-    }
-    html += '<button onclick="renderDecisions(' + (page+1) + ')" ' + (page===totalPages-1?'disabled':'') + '>→</button>';
-    html += '</div>';
-  }
-
-  document.getElementById('decContainer').innerHTML = html;
+function setLoading(msg) {
+  const id = 'loading-' + Date.now();
+  append('<div class="loading-msg" id="' + id + '">' + msg + '</div>');
+  return id;
 }
 
-async function doAsk() {
-  const question = document.getElementById('question').value.trim();
-  if (!question) return;
-  const btn = document.getElementById('btnAsk');
-  btn.disabled = true;
-  btn.textContent = 'Analyse...';
-  document.getElementById('results').innerHTML = '<div class="loading">Qualification juridique → recherche jurisprudence + textes de loi → analyse en cours...</div>';
+function removeLoading(id) {
+  document.getElementById(id)?.remove();
+}
+
+function updateSidebar() {
+  const list = document.getElementById('questionsList');
+  list.innerHTML = state.questions.map((q, i) => {
+    const done = !!state.questionAnalyses[i];
+    const active = i === state.currentQuestionIdx;
+    return '<div class="q-item' + (active ? ' active' : '') + (done ? ' done' : '') + '" onclick="goToQuestion(' + i + ')">' +
+      '<div class="q-num">Question ' + (i+1) + (done ? ' ✓' : '') + '</div>' +
+      '<div class="q-title">' + q.titre + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+async function startAnalysis() {
+  const facts = document.getElementById('factsInput').value.trim();
+  if (!facts) return;
+  state.facts = facts;
+
+  document.getElementById('initialScreen').style.display = 'none';
+  document.getElementById('analysisContent').style.display = 'block';
+  document.getElementById('sidebar').style.display = 'flex';
+  document.getElementById('chatBar').style.display = 'block';
+  document.getElementById('btnStart').disabled = true;
+
+  const lid = setLoading('Analyse des faits et identification des questions de droit...');
 
   try {
-    const res = await fetch('/api/ask', {
+    const res = await fetch('/api/qualify', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ question })
+      body: JSON.stringify({ facts })
     });
     const data = await res.json();
-    if (data.error) throw new Error(data.error);
+    removeLoading(lid);
 
-    allDecisions = data.decisions || [];
-    decPage = 0;
+    if (data.error) { append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + data.error + '</div>'); return; }
 
-    let html = '';
+    state.questions = data.questions_droit || [];
+    state.phase = 'qualify';
 
-    // Tags qualification
-    if (data.qualification) {
-      const q = data.qualification;
-      html += '<div class="tags">';
-      (q.branches || []).forEach(b => { html += '<span class="tag tag-purple">' + b + '</span>'; });
-      (q.notions || []).forEach(n => { html += '<span class="tag tag-blue">' + n + '</span>'; });
-      (q.codes || []).forEach(c => { html += '<span class="tag tag-green">' + c + '</span>'; });
-      html += '</div>';
-    }
+    // Afficher résumé des faits
+    append('<div class="block"><div class="block-title gray">Résumé des faits</div><div class="facts-box">' + data.resume_faits + '</div></div>');
 
-    // Analyse juridique
-    html += '<div class="section"><div class="section-title purple">Analyse juridique</div>';
-    html += '<div class="answer-body">' + renderMarkdown(data.answer, allDecisions) + '</div></div>';
+    // Afficher les questions
+    let qHtml = '<div class="block"><div class="block-title purple">Questions de droit identifiées (' + state.questions.length + ')</div><div class="questions-box">';
+    state.questions.forEach((q, i) => {
+      qHtml += '<div class="question-card">' +
+        '<div class="q-badge">Question ' + (i+1) + '</div>' +
+        '<div class="q-text">' + q.titre + '</div>' +
+        '<div class="q-desc">' + q.description + '</div>' +
+        '<div class="q-branches">' + (q.branches || []).map(b => '<span class="q-branch">' + b + '</span>').join('') + '</div>' +
+        '</div>';
+    });
+    qHtml += '</div>';
+    qHtml += '<div class="validate-bar">' +
+      '<button class="action primary" onclick="validateAndAnalyze()">Analyser ces questions →</button>' +
+      '<button class="action" onclick="focusChatForEdit()">Modifier les questions</button>' +
+      '</div></div>';
+    append(qHtml);
+
+    updateSidebar();
+
+  } catch(e) {
+    removeLoading(lid);
+    append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + e.message + '</div>');
+  }
+}
+
+function focusChatForEdit() {
+  document.getElementById('chatInput').placeholder = 'Ex : Ajoute une question sur la prescription, supprime la question 3...';
+  document.getElementById('chatInput').focus();
+}
+
+async function validateAndAnalyze() {
+  state.phase = 'analyze';
+  state.currentQuestionIdx = 0;
+  await analyzeQuestion(0);
+}
+
+async function analyzeQuestion(idx) {
+  if (idx >= state.questions.length) {
+    append('<hr class="section-sep"><div class="block"><div class="block-title green">✓ Analyse complète</div><div class="ai-msg">Toutes les questions ont été analysées. Vous pouvez poser des questions complémentaires ou demander d\'approfondir une question spécifique.</div></div>');
+    return;
+  }
+
+  state.currentQuestionIdx = idx;
+  updateSidebar();
+
+  const q = state.questions[idx];
+  append('<hr class="section-sep"><div class="block-title blue" style="margin-bottom:0.5rem;">Question ' + (idx+1) + ' / ' + state.questions.length + ' — ' + q.titre + '</div>');
+
+  const lid = setLoading('Recherche jurisprudence et textes de loi...');
+
+  try {
+    const res = await fetch('/api/analyze-question', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ question: q, facts: state.facts, history: state.history })
+    });
+    const data = await res.json();
+    removeLoading(lid);
+
+    if (data.error) { append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + data.error + '</div>'); return; }
+
+    state.questionAnalyses[idx] = data;
+    updateSidebar();
+
+    // Stats JP
+    let statsHtml = '<div class="block"><div class="block-title gray">Jurisprudence analysée</div><div class="jp-stats">';
+    let totalJP = 0;
+    data.jp_results.forEach(r => {
+      totalJP += r.count;
+      statsHtml += '<div class="jp-stat"><span class="jp-query">' + r.query + '</span><span class="jp-count">' + r.count + ' JP</span></div>';
+    });
+    statsHtml += '</div><div style="font-size:12px;color:#888;margin-top:4px;">Total : ' + totalJP + ' décisions analysées</div></div>';
+    append(statsHtml);
 
     // Textes de loi
-    if (data.lois && data.lois.length) {
-      html += '<div class="section"><div class="section-title green">Textes de loi (' + data.lois.length + ')</div>';
-      html += data.lois.map(loiHTML).join('');
-      html += '</div>';
+    if (data.loi_results && data.loi_results.length) {
+      let loiHtml = '<div class="block"><div class="block-title green">Textes de loi</div>';
+      data.loi_results.forEach(l => {
+        const url = l.url || ('https://www.legifrance.gouv.fr/search/all?query=' + encodeURIComponent(l.titre));
+        loiHtml += '<div class="loi-card"><a class="loi-title" href="' + url + '" target="_blank">' + (l.titre || 'Texte') + ' ↗</a>' +
+          (l.extract ? '<div class="loi-extract">' + l.extract + '</div>' : '') + '</div>';
+      });
+      loiHtml += '</div>';
+      append(loiHtml);
     }
 
-    // Jurisprudence
-    if (allDecisions.length) {
-      html += '<div class="section"><div class="section-title blue">Jurisprudence (' + allDecisions.length + ' décisions)</div>';
-      html += '<div id="decContainer"></div></div>';
+    // Analyse
+    append('<div class="block"><div class="block-title purple">Analyse — ' + q.titre + '</div><div class="analysis-box"><div class="analysis-body">' + renderMarkdown(data.analysis) + '</div></div></div>');
+
+    // Décisions sources
+    const allDecs = data.jp_results.flatMap(r => r.decisions);
+    if (allDecs.length) {
+      let decHtml = '<div class="block"><div class="block-title gray">Décisions sources</div><div class="dec-cards">';
+      allDecs.slice(0, 10).forEach(d => { decHtml += decCardHTML(d); });
+      decHtml += '</div></div>';
+      append(decHtml);
     }
 
-    document.getElementById('results').innerHTML = html;
-    if (allDecisions.length) renderDecisions(0);
+    // Boutons navigation
+    const isLast = idx === state.questions.length - 1;
+    let navHtml = '<div class="validate-bar">';
+    if (!isLast) navHtml += '<button class="action green" onclick="analyzeQuestion(' + (idx+1) + ')">Question suivante →</button>';
+    navHtml += '<button class="action" onclick="prepareDigDeeper(' + idx + ')">Creuser cette question</button>';
+    navHtml += '</div>';
+    append(navHtml);
 
-  } catch(err) {
-    document.getElementById('results').innerHTML = '<div class="error">Erreur : ' + err.message + '</div>';
+  } catch(e) {
+    removeLoading(lid);
+    append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + e.message + '</div>');
+  }
+}
+
+function prepareDigDeeper(idx) {
+  const q = state.questions[idx];
+  document.getElementById('chatInput').value = 'Creuse la question ' + (idx+1) + ' : ';
+  document.getElementById('chatInput').focus();
+  document.getElementById('chatInput').dataset.digIdx = idx;
+}
+
+async function goToQuestion(idx) {
+  if (state.phase === 'analyze' || state.phase === 'chat') {
+    if (!state.questionAnalyses[idx]) {
+      state.currentQuestionIdx = idx;
+      await analyzeQuestion(idx);
+    }
+  }
+}
+
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChat();
+  }
+}
+
+async function sendChat() {
+  const input = document.getElementById('chatInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+
+  const digIdx = input.dataset.digIdx;
+  input.dataset.digIdx = '';
+
+  append('<div class="user-msg">' + msg.replace(/</g,'&lt;') + '</div>');
+
+  const btn = document.getElementById('btnSend');
+  btn.disabled = true;
+
+  // Si c'est un "creuse"
+  if (digIdx !== '' && digIdx !== undefined && state.questionAnalyses[parseInt(digIdx)]) {
+    const idx = parseInt(digIdx);
+    const analysis = state.questionAnalyses[idx];
+    const lid = setLoading('Recherche de nouvelles jurisprudences...');
+
+    try {
+      const res = await fetch('/api/dig-deeper', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          question: state.questions[idx],
+          facts: state.facts,
+          current_queries: analysis.queries,
+          current_analysis: analysis.analysis,
+          user_instruction: msg,
+          history: state.history
+        })
+      });
+      const data = await res.json();
+      removeLoading(lid);
+
+      if (data.error) { append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + data.error + '</div>'); return; }
+
+      // Nouvelles stats
+      let statsHtml = '<div class="block"><div class="block-title gray">Nouvelles JP analysées</div><div class="jp-stats">';
+      data.jp_results.forEach(r => {
+        statsHtml += '<div class="jp-stat"><span class="jp-query">' + r.query + '</span><span class="jp-count">' + r.count + ' JP</span></div>';
+      });
+      statsHtml += '</div></div>';
+      append(statsHtml);
+
+      append('<div class="block"><div class="block-title purple">Analyse enrichie</div><div class="analysis-box"><div class="analysis-body">' + renderMarkdown(data.analysis) + '</div></div></div>');
+
+      state.questionAnalyses[idx].analysis = data.analysis;
+      state.questionAnalyses[idx].queries = [...state.questionAnalyses[idx].queries, ...data.new_queries];
+
+    } catch(e) {
+      removeLoading(lid);
+      append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + e.message + '</div>');
+    }
+  } else {
+    // Chat libre
+    const lid = setLoading('...');
+    try {
+      const context = 'Faits : ' + state.facts + '\nQuestions : ' + state.questions.map((q,i) => (i+1)+'. '+q.titre).join(', ');
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ message: msg, history: state.history, context })
+      });
+      const data = await res.json();
+      removeLoading(lid);
+      if (data.error) { append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + data.error + '</div>'); return; }
+      append('<div class="ai-msg">' + renderMarkdown(data.reply) + '</div>');
+      state.history.push({ role: 'user', content: msg });
+      state.history.push({ role: 'assistant', content: data.reply });
+    } catch(e) {
+      removeLoading(lid);
+      append('<div class="ai-msg" style="color:#991b1b;">Erreur : ' + e.message + '</div>');
+    }
   }
 
   btn.disabled = false;
-  btn.textContent = 'Analyser';
 }
 
 checkStatus();
