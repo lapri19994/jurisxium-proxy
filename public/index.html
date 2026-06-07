@@ -9,22 +9,29 @@
   body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; }
   header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 1rem 2rem; display: flex; align-items: center; gap: 12px; }
   header h1 { font-size: 1.2rem; font-weight: 600; }
-  header span { font-size: 12px; background: #d1fae5; color: #065f46; padding: 2px 8px; border-radius: 99px; }
+  .badge { font-size: 12px; padding: 2px 8px; border-radius: 99px; }
+  .badge-green { background: #d1fae5; color: #065f46; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+  nav { background: #fff; border-bottom: 1px solid #e5e5e5; display: flex; }
+  nav button { padding: 12px 24px; border: none; background: none; cursor: pointer; font-size: 14px; color: #666; border-bottom: 2px solid transparent; }
+  nav button.active { color: #6366f1; border-bottom-color: #6366f1; font-weight: 500; }
   main { max-width: 860px; margin: 2rem auto; padding: 0 1rem; }
-  .search-bar { display: flex; gap: 8px; margin-bottom: 1rem; }
-  .search-bar input { flex: 1; padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
-  .search-bar input:focus { border-color: #6366f1; }
-  .search-bar button { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
-  .search-bar button:hover { background: #4f46e5; }
+  .panel { display: none; }
+  .panel.active { display: block; }
+  input, select, textarea { padding: 10px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; outline: none; font-family: inherit; }
+  input:focus, textarea:focus { border-color: #6366f1; }
+  button.primary { padding: 10px 20px; background: #6366f1; color: #fff; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; }
+  button.primary:hover { background: #4f46e5; }
+  button.primary:disabled { opacity: 0.5; cursor: default; }
+  .row { display: flex; gap: 8px; margin-bottom: 1rem; }
   .filters { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
-  .filters select { padding: 7px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 13px; background: #fff; }
   .meta { font-size: 13px; color: #666; margin-bottom: 1rem; }
-  .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; transition: border-color 0.15s; }
+  .card { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 10px; }
   .card:hover { border-color: #a5b4fc; }
   .card-title { font-size: 14px; font-weight: 600; color: #1a1a1a; text-decoration: none; display: block; margin-bottom: 8px; }
   .card-title:hover { color: #6366f1; }
   .badges { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
-  .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
+  .b { font-size: 11px; padding: 2px 8px; border-radius: 99px; }
   .b-date { background: #f3f4f6; color: #374151; }
   .b-juris { background: #d1fae5; color: #065f46; }
   .b-chamber { background: #ede9fe; color: #4c1d95; }
@@ -33,71 +40,94 @@
   .excerpt em { background: #fef9c3; color: #713f12; font-style: normal; padding: 0 2px; border-radius: 2px; }
   .pagination { display: flex; gap: 6px; justify-content: center; margin: 2rem 0; flex-wrap: wrap; }
   .pagination button { padding: 6px 12px; border: 1px solid #ddd; border-radius: 6px; background: #fff; cursor: pointer; font-size: 13px; }
-  .pagination button:hover { background: #f3f4f6; }
   .pagination button.active { background: #6366f1; color: #fff; border-color: #6366f1; font-weight: 600; }
   .pagination button:disabled { opacity: 0.4; cursor: default; }
-  .empty { text-align: center; color: #888; padding: 3rem 0; font-size: 14px; }
-  .error { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 1rem; }
+  .ask-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .ask-box textarea { width: 100%; height: 80px; resize: vertical; margin-bottom: 10px; }
+  .answer-box { background: #fff; border: 1px solid #e5e5e5; border-radius: 10px; padding: 1.5rem; margin-bottom: 1.5rem; white-space: pre-wrap; font-size: 14px; line-height: 1.7; }
+  .keywords { font-size: 12px; color: #888; margin-bottom: 1rem; }
+  .keywords span { background: #ede9fe; color: #4c1d95; padding: 2px 8px; border-radius: 99px; margin-right: 4px; font-size: 11px; }
   .loading { text-align: center; color: #888; padding: 2rem 0; font-size: 14px; }
+  .error { background: #fee2e2; color: #991b1b; padding: 12px 16px; border-radius: 8px; font-size: 14px; margin-bottom: 1rem; }
+  .sources-title { font-size: 13px; font-weight: 600; color: #444; margin-bottom: 8px; }
 </style>
 </head>
 <body>
 
 <header>
   <h1>⚖️ Jurisxium</h1>
-  <span id="statusBadge">chargement...</span>
+  <span id="statusBadge" class="badge badge-green">connecté</span>
 </header>
 
+<nav>
+  <button class="active" onclick="showPanel('search', this)">🔍 Recherche</button>
+  <button onclick="showPanel('ask', this)">🤖 Question IA</button>
+</nav>
+
 <main>
-  <div class="search-bar">
-    <input id="q" type="text" placeholder="Rechercher une jurisprudence..." autofocus />
-    <button onclick="doSearch(1)">Rechercher</button>
+
+  <div id="panel-search" class="panel active">
+    <div class="row" style="margin-top:1rem;">
+      <input id="q" type="text" placeholder="Rechercher une jurisprudence..." style="flex:1;" />
+      <button class="primary" onclick="doSearch(1)">Rechercher</button>
+    </div>
+    <div class="filters">
+      <select id="jurisdiction">
+        <option value="">Toutes juridictions</option>
+        <option value="cc">Cour de cassation</option>
+        <option value="ca">Cour d'appel</option>
+        <option value="tj">Tribunal judiciaire</option>
+      </select>
+      <select id="order">
+        <option value="score">Pertinence</option>
+        <option value="desc">Plus récentes</option>
+        <option value="asc">Plus anciennes</option>
+      </select>
+      <select id="pageSize">
+        <option value="10">10 / page</option>
+        <option value="20">20 / page</option>
+        <option value="50">50 / page</option>
+      </select>
+    </div>
+    <div id="meta" class="meta"></div>
+    <div id="results"></div>
+    <div id="pagination" class="pagination"></div>
   </div>
 
-  <div class="filters">
-    <select id="jurisdiction">
-      <option value="">Toutes juridictions</option>
-      <option value="cc">Cour de cassation</option>
-      <option value="ca">Cour d'appel</option>
-      <option value="tj">Tribunal judiciaire</option>
-    </select>
-    <select id="order">
-      <option value="score">Pertinence</option>
-      <option value="desc">Plus récentes</option>
-      <option value="asc">Plus anciennes</option>
-    </select>
-    <select id="pageSize">
-      <option value="10">10 / page</option>
-      <option value="20">20 / page</option>
-      <option value="50">50 / page</option>
-    </select>
+  <div id="panel-ask" class="panel">
+    <div class="ask-box" style="margin-top:1rem;">
+      <textarea id="question" placeholder="Ex : Quels sont les délais de prescription en matière commerciale ? Quand peut-on licencier pour faute grave ?"></textarea>
+      <button class="primary" id="btnAsk" onclick="doAsk()">Analyser avec l'IA</button>
+    </div>
+    <div id="askResults"></div>
   </div>
 
-  <div id="meta" class="meta"></div>
-  <div id="results"></div>
-  <div id="pagination" class="pagination"></div>
 </main>
 
 <script>
-const BASE = '';
 let currentPage = 1;
 let currentTotal = 0;
 
-document.getElementById('q').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doSearch(1);
-});
+function showPanel(name, btn) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+document.getElementById('q').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(1); });
+document.getElementById('question').addEventListener('keydown', e => { if (e.key === 'Enter' && e.ctrlKey) doAsk(); });
 
 async function checkStatus() {
   try {
-    const r = await fetch(BASE + '/api/healthcheck');
+    const r = await fetch('/api/healthcheck');
     const d = await r.json();
-    document.getElementById('statusBadge').textContent = d.ok ? 'connecté' : 'erreur';
-    document.getElementById('statusBadge').style.background = d.ok ? '#d1fae5' : '#fee2e2';
-    document.getElementById('statusBadge').style.color = d.ok ? '#065f46' : '#991b1b';
+    const el = document.getElementById('statusBadge');
+    el.textContent = d.ok ? 'connecté' : 'erreur';
+    el.className = 'badge ' + (d.ok ? 'badge-green' : 'badge-red');
   } catch(e) {
     document.getElementById('statusBadge').textContent = 'hors ligne';
-    document.getElementById('statusBadge').style.background = '#fee2e2';
-    document.getElementById('statusBadge').style.color = '#991b1b';
+    document.getElementById('statusBadge').className = 'badge badge-red';
   }
 }
 
@@ -105,66 +135,88 @@ async function doSearch(page) {
   const q = document.getElementById('q').value.trim();
   if (!q) return;
   currentPage = page;
-
   document.getElementById('results').innerHTML = '<div class="loading">Recherche en cours...</div>';
   document.getElementById('meta').textContent = '';
   document.getElementById('pagination').innerHTML = '';
 
+  const params = new URLSearchParams({
+    query: q,
+    page: page - 1,
+    page_size: document.getElementById('pageSize').value
+  });
   const jurisdiction = document.getElementById('jurisdiction').value;
   const order = document.getElementById('order').value;
-  const pageSize = parseInt(document.getElementById('pageSize').value);
-
-  const params = new URLSearchParams({ query: q, page: page - 1, page_size: pageSize });
   if (jurisdiction) params.set('jurisdiction', jurisdiction);
   if (order !== 'score') params.set('order', order);
 
   try {
-    const res = await fetch(BASE + '/api/search?' + params);
+    const res = await fetch('/api/search?' + params);
     const data = await res.json();
     if (data.error) throw new Error(data.error);
     currentTotal = data.total || 0;
-    renderMeta(data, page, pageSize);
-    renderResults(data.results || []);
+    const pageSize = parseInt(document.getElementById('pageSize').value);
+    const from = (page - 1) * pageSize + 1;
+    const to = Math.min(page * pageSize, data.total);
+    document.getElementById('meta').textContent = data.total.toLocaleString('fr-FR') + ' décisions · ' + from + '–' + to + ' affichées · ' + data.took + 'ms';
+    renderCards(data.results || [], 'results');
     renderPagination(page, pageSize);
   } catch(err) {
     document.getElementById('results').innerHTML = '<div class="error">Erreur : ' + err.message + '</div>';
   }
 }
 
-function renderMeta(data, page, pageSize) {
-  const from = (page - 1) * pageSize + 1;
-  const to = Math.min(page * pageSize, data.total);
-  document.getElementById('meta').textContent =
-    data.total.toLocaleString('fr-FR') + ' décisions trouvées · ' + from + '–' + to + ' affichées · ' + data.took + 'ms';
+async function doAsk() {
+  const question = document.getElementById('question').value.trim();
+  if (!question) return;
+  const btn = document.getElementById('btnAsk');
+  btn.disabled = true;
+  btn.textContent = 'Analyse en cours...';
+  document.getElementById('askResults').innerHTML = '<div class="loading">L\'IA recherche et analyse les décisions...</div>';
+
+  try {
+    const res = await fetch('/api/ask', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+
+    const kw = data.keywords.split(' ').map(k => '<span>' + k + '</span>').join('');
+    let html = '<div class="keywords">Mots-clés recherchés : ' + kw + '</div>';
+    html += '<div class="answer-box">' + data.answer.replace(/</g, '&lt;') + '</div>';
+    if (data.decisions.length) {
+      html += '<div class="sources-title">Décisions sources (' + data.decisions.length + ')</div>';
+      html += data.decisions.map(d => cardHTML(d)).join('');
+    }
+    document.getElementById('askResults').innerHTML = html;
+  } catch(err) {
+    document.getElementById('askResults').innerHTML = '<div class="error">Erreur : ' + err.message + '</div>';
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Analyser avec l\'IA';
 }
 
-function renderResults(results) {
-  if (!results.length) {
-    document.getElementById('results').innerHTML = '<div class="empty">Aucun résultat.</div>';
-    return;
-  }
-  document.getElementById('results').innerHTML = results.map(r => {
-    const title = r.title || r.id || 'Décision';
-    const date = r.decision_date ? new Date(r.decision_date).toLocaleDateString('fr-FR') : (r.date || '');
-    const url = r.permalink || ('https://www.courdecassation.fr/decision/' + r.id);
-    let excerpt = '';
-    if (r.highlights) {
-      const hl = r.highlights.text || r.highlights.summary || [];
-      if (hl.length) excerpt = hl[0];
-    } else if (r.summary) {
-      excerpt = r.summary.slice(0, 250) + '...';
-    }
-    return `<div class="card">
-      <a class="card-title" href="${url}" target="_blank">${title} ↗</a>
-      <div class="badges">
-        ${date ? '<span class="badge b-date">📅 ' + date + '</span>' : ''}
-        ${r.jurisdiction ? '<span class="badge b-juris">' + r.jurisdiction + '</span>' : ''}
-        ${r.chamber ? '<span class="badge b-chamber">' + r.chamber + '</span>' : ''}
-        ${r.solution ? '<span class="badge b-solution">' + r.solution + '</span>' : ''}
-      </div>
-      ${excerpt ? '<div class="excerpt">' + excerpt + '</div>' : ''}
-    </div>`;
-  }).join('');
+function cardHTML(d) {
+  const title = d.title || d.id || 'Décision';
+  const date = d.date ? new Date(d.date).toLocaleDateString('fr-FR') : '';
+  const url = d.permalink || ('https://www.courdecassation.fr/decision/' + d.id);
+  return `<div class="card">
+    <a class="card-title" href="${url}" target="_blank">${title} ↗</a>
+    <div class="badges">
+      ${date ? '<span class="b b-date">📅 ' + date + '</span>' : ''}
+      ${d.jurisdiction ? '<span class="b b-juris">' + d.jurisdiction + '</span>' : ''}
+      ${d.chamber ? '<span class="b b-chamber">' + d.chamber + '</span>' : ''}
+      ${d.solution ? '<span class="b b-solution">' + d.solution + '</span>' : ''}
+    </div>
+    ${d.excerpt ? '<div class="excerpt">' + d.excerpt + '</div>' : ''}
+  </div>`;
+}
+
+function renderCards(results, containerId) {
+  if (!results.length) { document.getElementById(containerId).innerHTML = '<div class="loading">Aucun résultat.</div>'; return; }
+  document.getElementById(containerId).innerHTML = results.map(cardHTML).join('');
 }
 
 function renderPagination(page, pageSize) {
@@ -178,7 +230,6 @@ function renderPagination(page, pageSize) {
   for (let i = start; i <= end; i++) pages.push(i);
   if (end < totalPages - 1) pages.push('...');
   if (end < totalPages) pages.push(totalPages);
-
   document.getElementById('pagination').innerHTML =
     '<button onclick="doSearch(' + (page-1) + ')" ' + (page===1?'disabled':'') + '>←</button>' +
     pages.map(p => typeof p === 'number'
