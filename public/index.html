@@ -496,11 +496,11 @@ let argState = {
 
 const BACKEND = 'https://jurisxium-proxy-production.up.railway.app';
 
-async function claudeCall(prompt) {
+async function claudeCall(prompt, max_tokens) {
   const res = await fetch(`${BACKEND}/api/claude-direct`, {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prompt, max_tokens: 1200 })
+   body: JSON.stringify({ prompt, max_tokens: max_tokens || 1200 })
   });
   if (!res.ok) throw new Error('Erreur serveur');
   const data = await res.json();
@@ -550,7 +550,7 @@ Réponds UNIQUEMENT en JSON valide :
 {"arguments":[{"id":1,"type":"adverse","titre":"...","resume":"..."},{"id":2,...}]}`;
 
   try {
-    const raw = await claudeCall(prompt);
+   const raw = await claudeCall(prompt, 2000);
     const clean = raw.replace(/```json|```/g,'').trim();
     const parsed = JSON.parse(clean);
     argState.detectedArgs = parsed.arguments || [];
@@ -633,7 +633,7 @@ async function argDevelop() {
 }
 
 async function developOneFiche(arg) {
-  const docTrunc = argState.doc.slice(0, 8000);
+  const docTrunc = argState.doc.slice(0, 4000);
   const typeInstr = arg.type==='adverse'
     ? 'Cet argument est ADVERSE : décrivez ce qu\'affirme la partie adverse puis développez les contre-arguments avec jurisprudences et textes.'
     : arg.type==='propre'
