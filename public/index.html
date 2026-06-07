@@ -7,23 +7,32 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; color: #1a1a1a; }
-header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0.875rem 2rem; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; }
-header h1 { font-size: 1rem; font-weight: 700; }
+header { background: #fff; border-bottom: 1px solid #e5e5e5; padding: 0 2rem; display: flex; align-items: center; gap: 16px; position: sticky; top: 0; z-index: 100; height: 52px; }
+header h1 { font-size: 1rem; font-weight: 700; margin-right: 8px; }
 .dot { width: 7px; height: 7px; border-radius: 50%; background: #22c55e; }
 .dot.off { background: #ef4444; }
 
-.page { max-width: 820px; margin: 0 auto; padding: 2rem 1rem 6rem; }
+.nav-tabs { display: flex; gap: 0; height: 100%; }
+.nav-tab { padding: 0 16px; font-size: 13px; font-weight: 500; color: #888; cursor: pointer; border: none; background: none; height: 100%; border-bottom: 2px solid transparent; transition: color 0.15s, border-color 0.15s; font-family: inherit; }
+.nav-tab:hover { color: #1a1a1a; }
+.nav-tab.active { color: #6366f1; border-bottom-color: #6366f1; }
+
+.page { max-width: 820px; margin: 0 auto; padding: 2rem 1rem 6rem; display: none; }
+.page.active { display: block; }
 
 textarea { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; resize: vertical; line-height: 1.6; }
 textarea:focus { border-color: #6366f1; }
+select { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; font-family: inherit; outline: none; background: #fff; color: #1a1a1a; }
+select:focus { border-color: #6366f1; }
 
-button.btn { padding: 9px 20px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; background: #fff; font-family: inherit; }
+button.btn { padding: 9px 20px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; cursor: pointer; background: #fff; font-family: inherit; transition: background 0.15s; }
 button.btn:hover { background: #f5f5f5; }
 button.btn.primary { background: #6366f1; color: #fff; border-color: #6366f1; }
 button.btn.primary:hover { background: #4f46e5; }
 button.btn.primary:disabled { opacity: 0.5; cursor: default; }
 button.btn.green { background: #16a34a; color: #fff; border-color: #16a34a; }
 button.btn.green:hover { background: #15803d; }
+button.btn.sm { padding: 6px 14px; font-size: 13px; }
 
 .section { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1.25rem; }
 .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.75rem; }
@@ -31,6 +40,7 @@ button.btn.green:hover { background: #15803d; }
 .label-purple { color: #6366f1; }
 .label-blue { color: #2563eb; }
 .label-green { color: #16a34a; }
+.label-orange { color: #d97706; }
 
 .facts-text { font-size: 14px; line-height: 1.7; color: #333; }
 
@@ -75,6 +85,61 @@ button.btn.green:hover { background: #15803d; }
 
 .initial h2 { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.5rem; }
 .initial p { color: #888; font-size: 14px; margin-bottom: 1.5rem; }
+
+/* ── Argumentaire ── */
+.arg-step { display: none; }
+.arg-step.active { display: block; }
+
+.arg-progress { display: flex; gap: 6px; margin-bottom: 1.5rem; align-items: center; }
+.arg-dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; transition: background 0.2s, width 0.2s; }
+.arg-dot.done { background: #6366f1; }
+.arg-dot.active { background: #6366f1; width: 24px; border-radius: 4px; }
+.arg-dot-label { font-size: 12px; color: #888; margin-left: 4px; }
+
+.arg-item { border: 1px solid #e5e5e5; border-radius: 10px; padding: 1rem 1.25rem; margin-bottom: 8px; cursor: pointer; transition: border-color 0.15s, background 0.15s; user-select: none; }
+.arg-item:hover { border-color: #a5b4fc; background: #fafafa; }
+.arg-item.selected { border-color: #6366f1; background: #ede9fe; }
+.arg-item-row { display: flex; align-items: flex-start; gap: 10px; }
+.arg-checkbox { width: 16px; height: 16px; border: 1.5px solid #ccc; border-radius: 4px; flex-shrink: 0; margin-top: 2px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #fff; transition: background 0.15s, border-color 0.15s; }
+.arg-item.selected .arg-checkbox { background: #6366f1; border-color: #6366f1; }
+.arg-item-body { flex: 1; }
+.arg-item-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+.arg-item-preview { font-size: 13px; color: #555; line-height: 1.5; }
+.arg-badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 99px; margin-right: 6px; font-weight: 600; }
+.badge-adverse { background: #fee2e2; color: #991b1b; }
+.badge-propre { background: #dcfce7; color: #166534; }
+.badge-mixed { background: #fef9c3; color: #854d0e; }
+
+.fiche-block { background: #fff; border: 1px solid #e5e5e5; border-radius: 12px; margin-bottom: 1.25rem; overflow: hidden; }
+.fiche-head { padding: 1rem 1.5rem; border-bottom: 1px solid #f0f0f0; display: flex; align-items: center; gap: 8px; }
+.fiche-head-title { font-size: 14px; font-weight: 700; }
+.fiche-body { padding: 1.25rem 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+.fiche-row { display: flex; flex-direction: column; gap: 6px; }
+.fiche-label { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: #888; }
+.fiche-label.adverse { color: #991b1b; }
+.fiche-label.attack { color: #6366f1; }
+.fiche-label.form { color: #16a34a; }
+.fiche-label.warn { color: #d97706; }
+.fiche-text { font-size: 14px; line-height: 1.7; color: #222; }
+.fiche-box { background: #f8f8ff; border-left: 3px solid #6366f1; border-radius: 0 8px 8px 0; padding: 0.75rem 1rem; }
+.fiche-box.green { background: #f0fdf4; border-color: #16a34a; }
+.fiche-box.orange { background: #fffbeb; border-color: #d97706; }
+.fiche-jp { font-size: 13px; color: #444; font-style: italic; border-left: 2px solid #c7d2fe; padding-left: 10px; margin-top: 6px; line-height: 1.5; }
+.fiche-loi { font-size: 13px; color: #374151; background: #f3f4f6; border-radius: 4px; padding: 4px 10px; display: inline-block; margin-top: 4px; font-family: monospace; }
+.fiche-form { font-size: 14px; color: #166534; font-style: italic; line-height: 1.7; }
+
+.sel-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.sel-count { font-size: 13px; color: #888; }
+
+.export-area { background: #f8f8ff; border-radius: 8px; padding: 1rem; font-size: 13px; font-family: monospace; line-height: 1.7; white-space: pre-wrap; color: #1a1a1a; max-height: 400px; overflow-y: auto; border: 1px solid #e5e5e5; }
+
+.loading-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #888; padding: 0.5rem 0; }
+.dot-anim span { display: inline-block; animation: blink 1.2s infinite; }
+.dot-anim span:nth-child(2) { animation-delay: 0.2s; }
+.dot-anim span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes blink { 0%,80%,100%{opacity:0.2} 40%{opacity:1} }
+
+.err-msg { background: #fee2e2; color: #991b1b; border-radius: 8px; padding: 10px 14px; font-size: 13px; margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
@@ -82,9 +147,14 @@ button.btn.green:hover { background: #15803d; }
 <header>
   <h1>⚖️ Jurisxium</h1>
   <span id="statusDot" class="dot"></span>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('analyse')">Analyse</button>
+    <button class="nav-tab" onclick="switchTab('argumentaire')">Argumentaire</button>
+  </div>
 </header>
 
-<div class="page" id="page">
+<!-- ═══════════════ PAGE ANALYSE ═══════════════ -->
+<div class="page active" id="page-analyse">
   <div id="initialView">
     <div class="initial" style="margin-bottom:1.5rem;">
       <h2>Analyse juridique</h2>
@@ -101,6 +171,94 @@ button.btn.green:hover { background: #15803d; }
   <div id="resultsView" style="display:none;"></div>
 </div>
 
+<!-- ═══════════════ PAGE ARGUMENTAIRE ═══════════════ -->
+<div class="page" id="page-argumentaire">
+
+  <!-- Étape 1 : Document -->
+  <div class="arg-step active" id="arg-step-1">
+    <div class="initial" style="margin-bottom:1.5rem;">
+      <h2>Argumentaire</h2>
+      <p>Collez un document (jugement, pièce adverse, contrat...). L'IA identifie les arguments, vous sélectionnez ceux à développer et obtenez des fiches avec jurisprudences et textes de loi.</p>
+    </div>
+    <div class="section">
+      <div class="label label-gray">Document à analyser</div>
+      <textarea id="argDocText" rows="10" placeholder="Collez ici le texte du document : jugement, conclusions adverses, contrat, mémoire..."></textarea>
+      <div class="err-msg" id="err-doc">Veuillez coller un document à analyser.</div>
+    </div>
+    <div style="display:flex; justify-content:flex-end;">
+      <button class="btn primary" onclick="argGoStep2()">Suivant →</button>
+    </div>
+  </div>
+
+  <!-- Étape 2 : Position -->
+  <div class="arg-step" id="arg-step-2">
+    <div class="section">
+      <div class="label label-purple">Votre position</div>
+      <div style="margin-bottom:1rem;">
+        <div style="font-size:13px; color:#555; margin-bottom:6px;">Vous représentez</div>
+        <select id="argPartie">
+          <option value="">Sélectionnez...</option>
+          <option value="le demandeur / appelant">Le demandeur / appelant</option>
+          <option value="le défendeur / intimé">Le défendeur / intimé</option>
+          <option value="un tiers intervenant">Un tiers intervenant</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:13px; color:#555; margin-bottom:6px;">Décrivez votre position</div>
+        <textarea id="argPosition" rows="4" placeholder="Ex : Nous défendons la société X contre une action en résiliation. Nous soutenons que la résiliation était injustifiée et réclamons des dommages-intérêts..."></textarea>
+      </div>
+      <div class="err-msg" id="err-pos">Veuillez préciser votre position.</div>
+    </div>
+    <div style="display:flex; justify-content:space-between;">
+      <button class="btn sm" onclick="argGoStep(1)">← Retour</button>
+      <button class="btn primary" onclick="argAnalyze()">Identifier les arguments →</button>
+    </div>
+  </div>
+
+  <!-- Étape 3 : Sélection -->
+  <div class="arg-step" id="arg-step-3">
+    <div class="section">
+      <div class="label label-purple">Arguments identifiés</div>
+      <div id="arg-loading" class="loading-row">
+        <div class="spinner"></div>
+        <span>Identification des arguments<span class="dot-anim"><span>.</span><span>.</span><span>.</span></span></span>
+      </div>
+      <div id="arg-list-wrap" style="display:none;">
+        <div class="sel-bar">
+          <span class="sel-count" id="arg-sel-count">0 sélectionné(s)</span>
+          <button class="btn sm" onclick="argSelectAll()">Tout sélectionner</button>
+        </div>
+        <div id="arg-items"></div>
+      </div>
+    </div>
+    <div id="arg-step3-btns" style="display:flex; justify-content:space-between; display:none;">
+      <button class="btn sm" onclick="argGoStep(2)">← Retour</button>
+      <button class="btn primary" onclick="argDevelop()">Développer les fiches →</button>
+    </div>
+  </div>
+
+  <!-- Étape 4 : Fiches -->
+  <div class="arg-step" id="arg-step-4">
+    <div id="fiches-loading" class="loading-row" style="margin-bottom:1rem;">
+      <div class="spinner"></div>
+      <span>Développement des fiches<span class="dot-anim"><span>.</span><span>.</span><span>.</span></span></span>
+    </div>
+    <div id="fiches-list"></div>
+    <div id="export-block" style="display:none;">
+      <div class="section">
+        <div class="label label-gray">Export — résumé argumentaire</div>
+        <div class="export-area" id="export-text"></div>
+        <div class="action-row">
+          <button class="btn sm" onclick="copyExport()">Copier</button>
+          <button class="btn sm" onclick="argReset()">Nouvelle analyse</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /page-argumentaire -->
+
+<!-- Chat bar (analyse seulement) -->
 <div class="chat-bar" id="chatBar" style="display:none;">
   <div class="chat-row">
     <textarea id="chatInput" placeholder="Posez une question sur l'analyse..." onkeydown="chatKey(event)"></textarea>
@@ -109,6 +267,21 @@ button.btn.green:hover { background: #15803d; }
 </div>
 
 <script>
+/* ════════════════════════════════
+   NAV
+════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.nav-tab').forEach((t,i) => {
+    t.classList.toggle('active', (i===0 && tab==='analyse') || (i===1 && tab==='argumentaire'));
+  });
+  document.getElementById('page-analyse').classList.toggle('active', tab==='analyse');
+  document.getElementById('page-argumentaire').classList.toggle('active', tab==='argumentaire');
+  document.getElementById('chatBar').style.display = (tab==='analyse' && state.questions.length) ? 'block' : 'none';
+}
+
+/* ════════════════════════════════
+   ANALYSE
+════════════════════════════════ */
 let state = { facts: '', questions: [], history: [], stopped: false };
 
 async function api(url, body) {
@@ -159,20 +332,16 @@ async function qualify() {
   const btn = el('btnQualify');
   btn.disabled = true;
   btn.textContent = 'Analyse...';
-
   try {
     const data = await api('/api/qualify', { facts });
     state.questions = data.questions_droit || [];
-
     el('initialView').style.display = 'none';
     el('resultsView').style.display = 'block';
     el('chatBar').style.display = 'block';
-
     append(`<div class="section">
       <div class="label label-gray">Résumé des faits</div>
       <div class="facts-text">${data.resume_faits}</div>
     </div>`);
-
     let qHtml = `<div class="section" id="qualifySection">
       <div class="label label-purple">Questions de droit (${state.questions.length})</div>
       <div class="q-list">`;
@@ -189,7 +358,6 @@ async function qualify() {
       <button class="btn" onclick="focusChat('Modifie les questions : ')">Modifier</button>
     </div></div>`;
     append(qHtml);
-
   } catch(e) {
     append(`<div class="section" style="color:#991b1b;">Erreur : ${e.message}</div>`);
     btn.disabled = false;
@@ -206,13 +374,11 @@ async function startAnalysis() {
   el('qualifySection')?.querySelector('.action-row')?.remove();
   state.stopped = false;
   append('<hr class="sep">');
-
   for (let i = 0; i < state.questions.length; i++) {
     if (state.stopped) break;
     await analyzeQuestion(i);
     append('<hr class="sep">');
   }
-
   if (!state.stopped) {
     append(`<div class="section" style="background:#f0fdf4;border-color:#bbf7d0;">
       <div class="label label-green">✓ Analyse complète</div>
@@ -224,35 +390,20 @@ async function startAnalysis() {
 async function analyzeQuestion(idx) {
   const q = state.questions[idx];
   const boxId = 'progress-' + idx;
-
   append(`<div class="progress-box" id="${boxId}">
     <div class="progress-title"><span class="spinner"></span> Question ${idx+1}/${state.questions.length} — ${q.titre}</div>
     <div class="progress-rows" id="${boxId}-rows"></div>
     <div class="progress-status" id="${boxId}-status">Génération des requêtes...</div>
   </div>`);
-
-  function setStatus(msg) {
-    const s = el(boxId+'-status');
-    if (s) s.textContent = msg;
-  }
-
+  function setStatus(msg) { const s=el(boxId+'-status'); if(s) s.textContent=msg; }
   function addRow(query, count) {
-    const rows = el(boxId+'-rows');
-    if (!rows) return;
-    const existing = rows.querySelector(`[data-q="${query}"]`);
-    if (existing) {
-      existing.querySelector('.pc').textContent = count + ' JP';
-    } else {
-      rows.insertAdjacentHTML('beforeend',
-        `<div class="progress-row" data-q="${query}">
-          <span class="pq">${query}</span>
-          <span class="pc">${count} JP</span>
-        </div>`);
-    }
+    const rows=el(boxId+'-rows');
+    if(!rows) return;
+    const existing=rows.querySelector(`[data-q="${query}"]`);
+    if(existing) { existing.querySelector('.pc').textContent=count+' JP'; }
+    else { rows.insertAdjacentHTML('beforeend',`<div class="progress-row" data-q="${query}"><span class="pq">${query}</span><span class="pc">${count} JP</span></div>`); }
   }
-
   try {
-    // Génère requêtes initiales
     const { requetes } = await api('/api/get-queries', { question: q, facts: state.facts });
     let allQueries = requetes || [q.titre];
     let allDecisions = [];
@@ -261,77 +412,41 @@ async function analyzeQuestion(idx) {
     let totalJP = 0;
     let sufficient = false;
     const MAX_JP = 150;
-
-    allQueries.forEach(qr => { queryCounts[qr] = 0; addRow(qr, 0); });
-
-    let queryIdx = 0;
-    let page = 0;
-    let newQueryRound = 0;
-
+    allQueries.forEach(qr => { queryCounts[qr]=0; addRow(qr,0); });
+    let queryIdx=0, page=0, newQueryRound=0;
     while (totalJP < MAX_JP && !sufficient && queryIdx < allQueries.length) {
       if (state.stopped) return;
-
       const currentQuery = allQueries[queryIdx];
       setStatus(`Recherche "${currentQuery}" page ${page+1}... (${totalJP} JP analysées)`);
-
       const result = await api('/api/search-jp', { query: currentQuery, page });
       const newDecs = result.decisions.filter(d => !seenIds.has(d.id));
       newDecs.forEach(d => seenIds.add(d.id));
       allDecisions.push(...newDecs);
       totalJP += newDecs.length;
-      queryCounts[currentQuery] = (queryCounts[currentQuery] || 0) + newDecs.length;
+      queryCounts[currentQuery] = (queryCounts[currentQuery]||0) + newDecs.length;
       addRow(currentQuery, queryCounts[currentQuery]);
-
-      // Évalue tous les 20 JP
       if (totalJP >= 20 && totalJP % 20 < 10) {
         setStatus(`${totalJP} JP analysées — évaluation de la pertinence...`);
         const eval_ = await api('/api/evaluate-jp', { question: q, decisions: allDecisions });
-        if (eval_.sufficient) {
-          sufficient = true;
-          setStatus(`✓ ${totalJP} JP analysées — jurisprudence suffisante`);
-          break;
-        }
+        if (eval_.sufficient) { sufficient=true; setStatus(`✓ ${totalJP} JP analysées — jurisprudence suffisante`); break; }
       }
-
-      // Page suivante ou requête suivante
-      if (result.has_more && page < 4) {
-        page++;
-      } else {
-        queryIdx++;
-        page = 0;
-
-        // Si on a épuisé toutes les requêtes sans résultat suffisant
+      if (result.has_more && page < 4) { page++; }
+      else {
+        queryIdx++; page=0;
         if (queryIdx >= allQueries.length && totalJP < MAX_JP && newQueryRound < 2) {
           newQueryRound++;
           setStatus(`Génération de nouvelles requêtes (tentative ${newQueryRound})...`);
           try {
-            const { requetes: newReqs } = await api('/api/new-queries', {
-              question: q,
-              tried_queries: allQueries
-            });
-            if (newReqs?.length) {
-              newReqs.forEach(qr => { queryCounts[qr] = 0; addRow(qr, 0); allQueries.push(qr); });
-            } else break;
+            const { requetes: newReqs } = await api('/api/new-queries', { question: q, tried_queries: allQueries });
+            if (newReqs?.length) { newReqs.forEach(qr => { queryCounts[qr]=0; addRow(qr,0); allQueries.push(qr); }); }
+            else break;
           } catch(e) { break; }
         }
       }
     }
-
     setStatus(`${totalJP} JP analysées — rédaction de l'analyse...`);
-
-    // Recherche loi
-    const lois = await legiSearch(q);
-
-    // Rédaction
-    const decisionsToSend = allDecisions.slice(0, 20).map(function(d) { return { id: d.id, date: d.date, jurisdiction: d.jurisdiction, chamber: d.chamber, solution: d.solution, permalink: d.permalink, excerpt: (d.excerpt || '').slice(0, 300), fullText: (d.fullText || '').slice(0, 500) }; });
-    const { analysis } = await api('/api/write-analysis', {
-      question: q,
-      facts: state.facts,
-      decisions: decisionsToSend,
-      lois
-    });
-
-    // Remplace la progress box par l'analyse
+    const decisionsToSend = allDecisions.slice(0,20).map(d => ({ id:d.id, date:d.date, jurisdiction:d.jurisdiction, chamber:d.chamber, solution:d.solution, permalink:d.permalink, excerpt:(d.excerpt||'').slice(0,300), fullText:(d.fullText||'').slice(0,500) }));
+    const { analysis } = await api('/api/write-analysis', { question:q, facts:state.facts, decisions:decisionsToSend, lois:[] });
     const box = el(boxId);
     if (box) {
       box.outerHTML = `<div class="section">
@@ -340,48 +455,292 @@ async function analyzeQuestion(idx) {
         <div class="analysis-meta">${totalJP} décisions analysées · ${(q.branches||[]).join(', ')}</div>
       </div>`;
     }
-
   } catch(e) {
-    const box = el(boxId);
-    if (box) box.outerHTML = `<div class="section" style="color:#991b1b;">Erreur question ${idx+1} : ${e.message}</div>`;
+    const box=el(boxId);
+    if(box) box.outerHTML=`<div class="section" style="color:#991b1b;">Erreur question ${idx+1} : ${e.message}</div>`;
   }
 }
 
-async function legiSearch(q) {
-  try {
-    const res = await fetch('/api/write-analysis', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ question: q, facts: state.facts, decisions: [], lois: [], legiOnly: true })
-    });
-    return [];
-  } catch(e) { return []; }
-}
-
-function chatKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); }
-}
+function chatKey(e) { if(e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendChat(); } }
 
 async function sendChat() {
-  const input = el('chatInput');
-  const msg = input.value.trim();
-  if (!msg) return;
-  input.value = '';
-
-  const v = el('resultsView');
-  v.insertAdjacentHTML('beforeend', `<div class="section" style="background:#ede9fe;border-color:#c4b5fd;">
+  const input=el('chatInput');
+  const msg=input.value.trim();
+  if(!msg) return;
+  input.value='';
+  const v=el('resultsView');
+  v.insertAdjacentHTML('beforeend',`<div class="section" style="background:#ede9fe;border-color:#c4b5fd;">
     <div class="facts-text" style="color:#3730a3;">${msg.replace(/</g,'&lt;')}</div>
   </div>`);
-
   try {
-    const context = `Faits : ${state.facts}\nQuestions : ${state.questions.map((q,i)=>(i+1)+'. '+q.titre).join(', ')}`;
-    const data = await api('/api/chat', { message: msg, history: state.history, context });
-    v.insertAdjacentHTML('beforeend', `<div class="section"><div class="analysis-body">${renderMd(data.reply)}</div></div>`);
+    const context=`Faits : ${state.facts}\nQuestions : ${state.questions.map((q,i)=>(i+1)+'. '+q.titre).join(', ')}`;
+    const data=await api('/api/chat', { message:msg, history:state.history, context });
+    v.insertAdjacentHTML('beforeend',`<div class="section"><div class="analysis-body">${renderMd(data.reply)}</div></div>`);
     state.history.push({ role:'user', content:msg });
     state.history.push({ role:'assistant', content:data.reply });
   } catch(e) {
-    v.insertAdjacentHTML('beforeend', `<div class="section" style="color:#991b1b;">Erreur : ${e.message}</div>`);
+    v.insertAdjacentHTML('beforeend',`<div class="section" style="color:#991b1b;">Erreur : ${e.message}</div>`);
   }
+}
+
+/* ════════════════════════════════
+   ARGUMENTAIRE
+════════════════════════════════ */
+let argState = {
+  doc: '',
+  position: '',
+  detectedArgs: [],
+  selectedArgs: [],
+  fiches: []
+};
+
+const BACKEND = 'https://jurisxium-proxy-production.up.railway.app';
+
+async function claudeCall(prompt) {
+  const res = await fetch(`${BACKEND}/api/claude-direct`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ prompt, max_tokens: 1200 })
+  });
+  if (!res.ok) throw new Error('Erreur serveur');
+  const data = await res.json();
+  return data.text || data.content;
+}
+
+function argGoStep(n) {
+  document.querySelectorAll('.arg-step').forEach(s => s.classList.remove('active'));
+  el('arg-step-'+n).classList.add('active');
+}
+
+function argGoStep2() {
+  const doc = el('argDocText').value.trim();
+  if (!doc) { el('err-doc').style.display='block'; return; }
+  el('err-doc').style.display='none';
+  argState.doc = doc;
+  argGoStep(2);
+}
+
+async function argAnalyze() {
+  const partie = el('argPartie').value;
+  const pos = el('argPosition').value.trim();
+  if (!partie || !pos) { el('err-pos').style.display='block'; return; }
+  el('err-pos').style.display='none';
+  argState.position = `${partie} — ${pos}`;
+  argGoStep(3);
+  el('arg-loading').style.display='flex';
+  el('arg-list-wrap').style.display='none';
+  el('arg-step3-btns').style.display='none';
+  argState.selectedArgs = [];
+
+  const docTrunc = argState.doc.slice(0, 14000);
+  const prompt = `Tu es un avocat expert en droit français. Analyse ce document juridique et identifie les arguments clés.
+
+DOCUMENT :
+${docTrunc}
+
+NOTRE POSITION : ${argState.position}
+
+Identifie entre 4 et 8 arguments distincts (arguments adverses à réfuter ET arguments que nous pouvons développer).
+Pour chaque argument :
+- type : "adverse" (argument de la partie adverse à réfuter), "propre" (en notre faveur), ou "mixed" (double tranchant)
+- titre : max 10 mots
+- resume : 1-2 phrases sur ce que dit le document à ce sujet
+
+Réponds UNIQUEMENT en JSON valide :
+{"arguments":[{"id":1,"type":"adverse","titre":"...","resume":"..."},{"id":2,...}]}`;
+
+  try {
+    const raw = await claudeCall(prompt);
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const parsed = JSON.parse(clean);
+    argState.detectedArgs = parsed.arguments || [];
+    renderArgList();
+  } catch(err) {
+    el('arg-loading').innerHTML = '<span style="color:#991b1b">Erreur d\'analyse. Vérifiez la connexion au serveur.</span>';
+  }
+}
+
+function renderArgList() {
+  el('arg-loading').style.display='none';
+  el('arg-list-wrap').style.display='block';
+  el('arg-step3-btns').style.display='flex';
+  const container = el('arg-items');
+  container.innerHTML = '';
+  argState.detectedArgs.forEach(arg => {
+    const div = document.createElement('div');
+    div.className = 'arg-item';
+    div.dataset.id = arg.id;
+    const typeLabel = arg.type==='adverse' ? 'À réfuter' : arg.type==='propre' ? 'En notre faveur' : 'Double tranchant';
+    const typeClass = arg.type==='adverse' ? 'badge-adverse' : arg.type==='propre' ? 'badge-propre' : 'badge-mixed';
+    div.innerHTML = `<div class="arg-item-row">
+      <div class="arg-checkbox" id="chk-${arg.id}"></div>
+      <div class="arg-item-body">
+        <div><span class="arg-badge ${typeClass}">${typeLabel}</span><span class="arg-item-title">${arg.titre}</span></div>
+        <div class="arg-item-preview">${arg.resume}</div>
+      </div>
+    </div>`;
+    div.addEventListener('click', () => toggleArgSel(div, arg));
+    container.appendChild(div);
+  });
+  updateSelCount();
+}
+
+function toggleArgSel(el_, arg) {
+  el_.classList.toggle('selected');
+  const chk = el_.querySelector('.arg-checkbox');
+  if (el_.classList.contains('selected')) {
+    chk.textContent = '✓';
+    if (!argState.selectedArgs.find(a => a.id===arg.id)) argState.selectedArgs.push(arg);
+  } else {
+    chk.textContent = '';
+    argState.selectedArgs = argState.selectedArgs.filter(a => a.id!==arg.id);
+  }
+  updateSelCount();
+}
+
+function argSelectAll() {
+  document.querySelectorAll('.arg-item').forEach(div => {
+    if (!div.classList.contains('selected')) {
+      div.classList.add('selected');
+      div.querySelector('.arg-checkbox').textContent = '✓';
+      const id = parseInt(div.dataset.id);
+      const arg = argState.detectedArgs.find(a => a.id===id);
+      if (arg && !argState.selectedArgs.find(a => a.id===id)) argState.selectedArgs.push(arg);
+    }
+  });
+  updateSelCount();
+}
+
+function updateSelCount() {
+  el('arg-sel-count').textContent = argState.selectedArgs.length + ' sélectionné(s)';
+}
+
+async function argDevelop() {
+  if (!argState.selectedArgs.length) return;
+  argGoStep(4);
+  el('fiches-loading').style.display='flex';
+  el('fiches-list').innerHTML='';
+  el('export-block').style.display='none';
+  argState.fiches=[];
+
+  for (const arg of argState.selectedArgs) {
+    await developOneFiche(arg);
+  }
+
+  el('fiches-loading').style.display='none';
+  buildExport();
+  el('export-block').style.display='block';
+}
+
+async function developOneFiche(arg) {
+  const docTrunc = argState.doc.slice(0, 8000);
+  const typeInstr = arg.type==='adverse'
+    ? 'Cet argument est ADVERSE : décrivez ce qu\'affirme la partie adverse puis développez les contre-arguments avec jurisprudences et textes.'
+    : arg.type==='propre'
+    ? 'Cet argument est EN NOTRE FAVEUR : développez-le avec les jurisprudences et textes de loi qui le soutiennent.'
+    : 'Argument double tranchant : montrez les deux faces et comment l\'exploiter en notre faveur.';
+
+  const prompt = `Tu es un avocat expert en droit français. ${typeInstr}
+
+ARGUMENT : "${arg.titre}"
+RÉSUMÉ : ${arg.resume}
+NOTRE POSITION : ${argState.position}
+
+DOCUMENT (extrait) :
+${docTrunc}
+
+Réponds UNIQUEMENT en JSON valide :
+{
+  "affirmation": "Ce qu'affirme le texte ou la partie adverse en 2-3 phrases précises",
+  "contre_attaque": "Notre contre-argument développé en 3-4 phrases avec raisonnement juridique",
+  "jurisprudences": ["Cass. XXX, date, n°XX — apport pour notre thèse"],
+  "textes": ["Art. X Code Y — ce qu'il dit en lien avec l'argument"],
+  "formulation": "Formulation suggérée pour conclusions (1 paragraphe, style juridique)",
+  "vigilance": "Point de vigilance ou nuance importante"
+}`;
+
+  try {
+    const raw = await claudeCall(prompt);
+    const clean = raw.replace(/```json|```/g,'').trim();
+    const fiche = JSON.parse(clean);
+    fiche.titre = arg.titre;
+    fiche.type = arg.type;
+    argState.fiches.push(fiche);
+    renderFiche(fiche);
+  } catch(err) {
+    el('fiches-list').insertAdjacentHTML('beforeend',
+      `<div class="section" style="color:#991b1b; font-size:13px;">Erreur sur l'argument "${arg.titre}"</div>`);
+  }
+}
+
+function renderFiche(f) {
+  const typeLabel = f.type==='adverse' ? 'À réfuter' : f.type==='propre' ? 'En notre faveur' : 'Double tranchant';
+  const typeClass = f.type==='adverse' ? 'badge-adverse' : f.type==='propre' ? 'badge-propre' : 'badge-mixed';
+  const jps = (f.jurisprudences||[]).map(j=>`<div class="fiche-jp">${j}</div>`).join('');
+  const textes = (f.textes||[]).map(t=>`<div class="fiche-loi">${t}</div>`).join('');
+
+  const html = `<div class="fiche-block">
+    <div class="fiche-head">
+      <span class="arg-badge ${typeClass}">${typeLabel}</span>
+      <span class="fiche-head-title">${f.titre}</span>
+    </div>
+    <div class="fiche-body">
+      <div class="fiche-row">
+        <div class="fiche-label adverse">Ce qu'affirme le document / la partie adverse</div>
+        <div class="fiche-text">${f.affirmation||'—'}</div>
+      </div>
+      <div class="fiche-row">
+        <div class="fiche-label attack">Notre contre-argument</div>
+        <div class="fiche-box">
+          <div class="fiche-text">${f.contre_attaque||'—'}</div>
+          ${jps}
+          ${textes ? '<div style="margin-top:8px;">'+textes+'</div>' : ''}
+        </div>
+      </div>
+      ${f.formulation ? `<div class="fiche-row">
+        <div class="fiche-label form">Formulation pour conclusions</div>
+        <div class="fiche-box green"><div class="fiche-form">${f.formulation}</div></div>
+      </div>` : ''}
+      ${f.vigilance ? `<div class="fiche-row">
+        <div class="fiche-label warn">⚠ Point de vigilance</div>
+        <div class="fiche-box orange"><div class="fiche-text" style="font-size:13px;">${f.vigilance}</div></div>
+      </div>` : ''}
+    </div>
+  </div>`;
+  el('fiches-list').insertAdjacentHTML('beforeend', html);
+}
+
+function buildExport() {
+  let txt = 'ARGUMENTAIRE — PRÉPARATION PLAIDOIRIE / CONCLUSIONS\n';
+  txt += '='.repeat(52) + '\n';
+  txt += 'Position : ' + argState.position + '\n\n';
+  argState.fiches.forEach((f,i) => {
+    txt += `${i+1}. ${f.titre.toUpperCase()}\n`;
+    txt += '-'.repeat(40) + '\n';
+    txt += 'AFFIRMATION ADVERSE :\n' + (f.affirmation||'—') + '\n\n';
+    txt += 'CONTRE-ARGUMENT :\n' + (f.contre_attaque||'—') + '\n\n';
+    if (f.jurisprudences?.length) txt += 'JURISPRUDENCES :\n' + f.jurisprudences.join('\n') + '\n\n';
+    if (f.textes?.length) txt += 'TEXTES :\n' + f.textes.join('\n') + '\n\n';
+    if (f.formulation) txt += 'FORMULATION CONCLUSIONS :\n' + f.formulation + '\n\n';
+    txt += '\n';
+  });
+  el('export-text').textContent = txt;
+}
+
+function copyExport() {
+  navigator.clipboard.writeText(el('export-text').textContent);
+  event.target.textContent = 'Copié !';
+  setTimeout(() => { event.target.textContent = 'Copier'; }, 2000);
+}
+
+function argReset() {
+  argState = { doc:'', position:'', detectedArgs:[], selectedArgs:[], fiches:[] };
+  el('argDocText').value='';
+  el('argPosition').value='';
+  el('argPartie').value='';
+  el('fiches-list').innerHTML='';
+  el('export-block').style.display='none';
+  argGoStep(1);
 }
 
 checkStatus();
