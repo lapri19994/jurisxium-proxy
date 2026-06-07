@@ -86,7 +86,7 @@ app.post('/api/ask', async (req, res) => {
 
     console.log('Keywords:', keywords);
 
-    const searchData = await judilibre('search', { query: keywords.trim(), page_size: 5 });
+    const searchData = await judilibre('search', { query: keywords.trim(), page_size: 50 });
     const decisions = searchData.results || [];
 
     console.log('Decisions found:', decisions.length);
