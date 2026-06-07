@@ -20,11 +20,12 @@ async function judilibre(endpoint, params = {}) {
   const res = await fetch(url.toString(), {
     headers: { 'accept': 'application/json', 'KeyId': JUDILIBRE_KEY }
   });
-  if (!res.ok) throw { status: res.status, message: await res.text() };
+  if (!res.ok) throw new Error(`JUDILIBRE ${res.status}: ${await res.text()}`);
   return res.json();
 }
 
 async function claude(messages, max_tokens = 1000) {
+  if (!ANTHROPIC_KEY) throw new Error('ANTHROPIC_KEY manquante dans les variables Railway');
   const res = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
@@ -35,13 +36,16 @@ async function claude(messages, max_tokens = 1000) {
     body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens, messages })
   });
   const data = await res.json();
+  console.log('Claude status:', res.status, 'type:', data.type);
+  if (data.type === 'error') throw new Error('Claude: ' + data.error?.message || JSON.stringify(data));
+  if (!data.content || !data.content[0]) throw new Error('Claude réponse vide: ' + JSON.stringify(data));
   return data.content[0].text;
 }
 
 app.get('/api/healthcheck', async (req, res) => {
   try {
     const data = await judilibre('healthcheck');
-    res.json({ ok: true, judilibre: data });
+    res.json({ ok: true, judilibre: data, anthropic_key: ANTHROPIC_KEY ? 'présente' : 'manquante' });
   } catch(err) { res.status(502).json({ ok: false, error: err.message }); }
 });
 
@@ -49,13 +53,13 @@ app.get('/api/search', async (req, res) => {
   try {
     const { query, page, page_size, jurisdiction, chamber, order } = req.query;
     res.json(await judilibre('search', { query, page, page_size, jurisdiction, chamber, order }));
-  } catch(err) { res.status(err.status || 502).json({ error: err.message }); }
+  } catch(err) { res.status(502).json({ error: err.message }); }
 });
 
 app.get('/api/decision/:id', async (req, res) => {
   try {
     res.json(await judilibre('decision', { id: req.params.id }));
-  } catch(err) { res.status(err.status || 502).json({ error: err.message }); }
+  } catch(err) { res.status(502).json({ error: err.message }); }
 });
 
 app.get('/api/taxonomy', async (req, res) => {
@@ -80,13 +84,19 @@ app.post('/api/ask', async (req, res) => {
       content: `Extrait 3 à 5 mots-clés juridiques pour rechercher dans une base de jurisprudence française. Question : "${question}". Réponds UNIQUEMENT avec les mots-clés séparés par des espaces, rien d'autre.`
     }], 100);
 
-    const searchData = await judilibre('search', { query: keywords, page_size: 5 });
+    console.log('Keywords:', keywords);
+
+    const searchData = await judilibre('search', { query: keywords.trim(), page_size: 5 });
     const decisions = searchData.results || [];
 
-    const context = decisions.map((d, i) => {
-      const excerpt = d.highlights?.text?.[0] || d.summary?.slice(0, 300) || '';
-      return `Décision ${i+1} (${d.date || ''}, ${d.jurisdiction || ''}, ${d.chamber || ''}) : ${excerpt}`;
-    }).join('\n\n');
+    console.log('Decisions found:', decisions.length);
+
+    const context = decisions.length
+      ? decisions.map((d, i) => {
+          const excerpt = d.highlights?.text?.[0] || d.summary?.slice(0, 300) || 'Pas d\'extrait disponible';
+          return `Décision ${i+1} (${d.date || 'date inconnue'}, ${d.jurisdiction || ''}, ${d.chamber || ''}) : ${excerpt}`;
+        }).join('\n\n')
+      : 'Aucune décision trouvée.';
 
     const answer = await claude([{
       role: 'user',
@@ -95,7 +105,7 @@ app.post('/api/ask', async (req, res) => {
 
     res.json({
       answer,
-      keywords,
+      keywords: keywords.trim(),
       decisions: decisions.map(d => ({
         id: d.id,
         title: d.title,
@@ -109,11 +119,13 @@ app.post('/api/ask', async (req, res) => {
     });
 
   } catch(err) {
-    console.error(err);
+    console.error('Error in /api/ask:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.listen(PORT, () => {
   console.log(`Jurisxium running on port ${PORT}`);
+  console.log(`ANTHROPIC_KEY: ${ANTHROPIC_KEY ? 'OK' : 'MANQUANTE'}`);
+  console.log(`JUDILIBRE_KEY: ${JUDILIBRE_KEY.slice(0, 8)}...`);
 });
