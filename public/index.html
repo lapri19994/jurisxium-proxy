@@ -323,10 +323,11 @@ async function analyzeQuestion(idx) {
     const lois = await legiSearch(q);
 
     // Rédaction
+    const decisionsToSend = allDecisions.slice(0, 20).map(function(d) { return { id: d.id, date: d.date, jurisdiction: d.jurisdiction, chamber: d.chamber, solution: d.solution, permalink: d.permalink, excerpt: (d.excerpt || '').slice(0, 300), fullText: (d.fullText || '').slice(0, 500) }; });
     const { analysis } = await api('/api/write-analysis', {
       question: q,
       facts: state.facts,
-      decisions: allDecisions,
+      decisions: decisionsToSend,
       lois
     });
 
