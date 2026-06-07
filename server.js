@@ -164,16 +164,25 @@ app.post('/api/qualify', async (req, res) => {
     ...history,
     {
       role: 'user',
-      content: `Tu es un juriste français expert. Analyse ces faits et réponds en JSON strict (sans markdown) :
+      content: `Tu es un juriste français expert. Analyse ces faits et identifie les questions de droit à trancher.
+
+RÈGLES pour identifier les questions :
+- Chaque question doit être DISTINCTE, avec sa propre règle de droit autonome
+- Ne pas créer une question qui est juste un argument d'une autre
+- Maximum 5 questions, minimum 2
+- Fusionner les questions qui portent sur le même mécanisme juridique
+- Formuler chaque question comme une vraie question juridique à trancher
+
+Réponds en JSON strict (sans markdown) :
 {
-  "resume_faits": "Résumé factuel en 3-5 phrases",
+  "resume_faits": "Résumé factuel en 3-5 phrases, uniquement les faits",
   "questions_droit": [
     {
       "id": 1,
-      "titre": "Titre court de la question",
-      "description": "Description précise de la question juridique",
-      "branches": ["droit civil", etc.],
-      "pertinence": "Pourquoi cette question est centrale"
+      "titre": "Titre court et précis",
+      "description": "La question juridique précise à trancher",
+      "branches": ["droit civil"],
+      "pertinence": "En quoi cette question est distincte et centrale pour le litige"
     }
   ]
 }
@@ -246,25 +255,34 @@ Faits : ${facts}`
       ...history,
       {
         role: 'user',
-        content: `Tu es un juriste français expert. Analyse cette question de droit.
+        content: `Tu es un juriste français expert. Réponds UNIQUEMENT à cette question en raisonnant par syllogisme juridique.
+
+QUESTION : "${question.titre}"
+${question.description}
 
 FAITS : ${facts}
 
-QUESTION : ${question.titre}
-${question.description}
-
 ${loiContext}
 
-JURISPRUDENCE TROUVÉE :
+JURISPRUDENCE :
 ${jpContext}
 
-Rédige une analyse structurée :
-1. Principe juridique applicable (cite les articles précis avec leur numéro)
-2. État de la jurisprudence (cite les décisions par [numéro] ex: [1], [2]...)
-3. Nuances et exceptions
-4. Conclusion sur cette question
+STRUCTURE OBLIGATOIRE :
 
-Sois précis et cite les sources.`
+## Majeure — La règle de droit
+Énonce uniquement la règle applicable à CETTE question : articles de loi (numéros précis) et jurisprudence pertinente (cite [1], [2]...). Ne cite que les décisions directement en rapport avec cette question.
+
+## Mineure — En l'espèce
+Commence par "En l'espèce," et applique la règle aux faits concrets. Qualifie chaque élément factuel pertinent pour cette question uniquement.
+
+## Conclusion — Dès lors
+Commence par "Dès lors," et donne la réponse juridique nette à la question posée.
+
+RÈGLES ABSOLUES :
+- Traite UNIQUEMENT cette question, pas les autres questions du dossier
+- 300 mots maximum
+- Si aucune JP pertinente : dis-le et raisonne sur les textes uniquement
+- Pas d'introduction, pas de conclusion générale, pas de recommandations stratégiques`
       }
     ];
 
